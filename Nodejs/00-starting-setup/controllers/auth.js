@@ -31,7 +31,6 @@ const postLogin = async (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
   const errors = validationResult(req);
-  console.log(errors.array());
 
   //validation
   if (!errors.isEmpty()) {

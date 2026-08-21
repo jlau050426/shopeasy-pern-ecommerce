@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 function App() {
+  
   //state lifted up
   //track cart quantity
   const [cart, setCart] = useState([]);

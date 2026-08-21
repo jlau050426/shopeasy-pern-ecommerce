@@ -8,8 +8,7 @@ import { Link } from "react-router-dom";
 import { cartQuantity } from "../../utils/cartQuantity";
 
 export function CheckoutPage({ cart, fetchCart }) {
-
-  const totalQuantity = cartQuantity(cart)
+  const totalQuantity = cartQuantity(cart);
 
   const [deliveryOptions, setDeliveryOptions] = useState([]);
   //state for payment summary
@@ -39,7 +38,7 @@ export function CheckoutPage({ cart, fetchCart }) {
     }
 
     getPaymentSummary();
-  }, [cart]);  //when cart changes, the useEffect will rerun and update the payment summary 
+  }, [cart]); //when cart changes, the useEffect will rerun and update the payment summary
 
   return (
     <>
@@ -71,8 +70,16 @@ export function CheckoutPage({ cart, fetchCart }) {
         <div className="page-title">Review your cart</div>
 
         <div className="checkout-grid">
-          <OrderSummary deliveryOptions={deliveryOptions} cart={cart} fetchCart={fetchCart}></OrderSummary>
-          <PaymentSummary paymentSummary={paymentSummary} cart={cart} fetchCart={fetchCart}></PaymentSummary>
+          <OrderSummary
+            deliveryOptions={deliveryOptions}
+            cart={cart}
+            fetchCart={fetchCart}
+          ></OrderSummary>
+          <PaymentSummary
+            paymentSummary={paymentSummary}
+            cart={cart}
+            fetchCart={fetchCart}
+          ></PaymentSummary>
         </div>
       </div>
     </>

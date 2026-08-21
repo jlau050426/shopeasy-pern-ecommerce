@@ -10,6 +10,25 @@ const stripe = require("../util/stripe-payment.js");
 const { pagination } = require("../util/pagination.js");
 const db = require('../util/database.js')
 
+// const getIndex = async (req, res, next) => {
+//   const productsPerPage = 2;
+//   await pagination(
+//     req,
+//     res,
+//     productsPerPage,
+//     "/",
+//     async (fetchPage, totalPages) => {
+//       res.render("../views/shop/index.ejs", {
+//         prods: fetchPage.rows,
+//         pageTitle: "Shop",
+//         path: "/",
+//         totalPages: totalPages,
+//         errorMessage: req.flash("error"),
+//       });
+//     },
+//   );
+// };
+
 const getIndex = async (req, res, next) => {
   const productsPerPage = 2;
   await pagination(

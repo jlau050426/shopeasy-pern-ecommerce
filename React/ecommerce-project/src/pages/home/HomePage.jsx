@@ -21,6 +21,7 @@ export function HomePage({ cart, fetchCart }) {
     fetchProduct();
   }, []);
 
+  //search mechanism
   const filteredProducts = products.filter((product) => {
     return product.name.toLowerCase().includes(search.toLowerCase());
   });
