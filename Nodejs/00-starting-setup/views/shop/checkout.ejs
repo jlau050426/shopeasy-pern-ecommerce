@@ -1,0 +1,65 @@
+<%- include('../includes/head.ejs') %>
+    <link rel="stylesheet" href="/css/checkout.css">
+    </head>
+
+    <body>
+        <%- include('../includes/navigation.ejs') %>
+
+            <main class="checkout-page">
+                <div class="checkout-container">
+                    <h1 class="checkout-title">Checkout Summary</h1>
+
+                    <% if (cart && cart.length> 0) { %>
+                        <div class="checkout-card">
+                            <!-- Products List Header -->
+                            <div class="checkout-table-header">
+                                <span class="col-name">Product Name</span>
+                                <span class="col-subtotal">Subtotal</span>
+                            </div>
+
+                            <!-- Products List -->
+                            <ul class="checkout-list">
+                                <% cart.forEach(c=> { %>
+                                    <li class="checkout-item">
+                                        <div class="checkout-item__name">
+                                            <span class="checkout-item__title">
+                                                <%= c.title %>
+                                            </span>
+                                            <% if (c.quantity> 1) { %>
+                                                <span class="checkout-item__qty">(Qty: <%= c.quantity %>)</span>
+                                                <% } %>
+                                        </div>
+                                        <div class="checkout-item__subtotal">
+                                            $<%= Number(c.item_total).toFixed(2) %>
+                                        </div>
+                                    </li>
+                                    <% }) %>
+                            </ul>
+
+                            <div class="checkout-divider"></div>
+
+                            <!-- Total Price -->
+                            <div class="checkout-total">
+                                <span class="checkout-total__label">Total Price</span>
+                                <span class="checkout-total__amount">$<%= Number(grandTotal).toFixed(2) %></span>
+                            </div>
+
+                            <!-- Order Now Button -->
+                            <form action="/checkout" method="POST" class="checkout-form">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+                                <button type="submit" class="btn btn--order-now">
+                                    Pay Now
+                                </button>
+                            </form>
+                        </div>
+                        <% } else { %>
+                            <div class="checkout-empty">
+                                <h2>No items to checkout!</h2>
+                                <a href="/products" class="btn">Return to Shop</a>
+                            </div>
+                            <% } %>
+                </div>
+            </main>
+
+            <%- include('../includes/end.ejs') %>

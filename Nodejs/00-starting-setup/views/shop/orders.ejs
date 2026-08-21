@@ -1,0 +1,70 @@
+<%- include('../includes/head.ejs') %>
+    <link rel="stylesheet" href="/css/orders.css">
+    <link rel="stylesheet" href="/css/flash-message.css">
+    </head>
+
+    <body>
+        <%- include('../includes/navigation.ejs') %>
+            <% if (errorMessage.length> 0) { %>
+                <div class="user-message user-message--error">
+                    <%= errorMessage %>
+                </div>
+                <% } %>
+
+                    <main class="orders-page">
+                        <h1 class="orders-title">Your Orders</h1>
+
+                        <% if (orders && orders.length> 0) { %>
+                            <ul class="orders-list">
+                                <% orders.forEach(order=> { %>
+                                    <li class="order-card">
+                                        <div class="order-header">
+                                            <span class="order-id">Order #<%= order.id %></span>
+                                            <span class="order-time">Placed on: <%= new
+                                                    Date(order.created_at).toLocaleString() %></span>
+                                        </div>
+
+                                        <ul class="order-products">
+                                            <% const items=order.items || order.products || []; %>
+                                                <% items.forEach(product=> { %>
+                                                    <li class="order-product-item">
+                                                        <div class="order-product-image">
+                                                            <img src="/<%= product.imageurl %>"
+                                                                alt="<%= product.title %>">
+                                                        </div>
+                                                        <div class="order-product-details">
+                                                            <h2 class="order-product-title">
+                                                                <%= product.title %> (<%= product.quantity %>)
+                                                            </h2>
+                                                            <span class="order-product-subtotal">
+                                                                Quantity: <%= product.quantity %>
+                                                                    <br>
+                                                                    Price: $<%= product.price %> | Subtotal: $<%=
+                                                                            product.total_price || (product.quantity *
+                                                                            product.price) %>
+                                                            </span>
+                                                        </div>
+                                                    </li>
+                                                    <% }) %>
+                                        </ul>
+                                        <br>
+                                        <span class="order-time">Order Price: $<%=order.single_order_total_price %>
+                                        </span>
+                                        <a href="/order/<%= order.id %>">INVOICE</a>
+                                    </li>
+                                    <% }) %>
+                            </ul>
+                            <% } else { %>
+                                <div class="orders-empty">
+                                    <h2>No Orders Found!</h2>
+                                    <p>You have not placed any orders yet.</p>
+                                </div>
+                                <% } %>
+
+                                    <div class="order-footer">
+                                        <span class="order-total-label">Total Order Price:</span>
+                                        <span class="order-total-price">$<%= orderTotalPrice %></span>
+                                    </div>
+                    </main>
+
+                    <%- include('../includes/end.ejs') %>
