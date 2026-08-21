@@ -111,8 +111,8 @@ const postEditProduct = async (req, res, next) => {
     const existingImageURL = targetedProduct.rows[0].imageurl;
     const imageURL = image ? image.filename : existingImageURL;
     if (image) {
-      await fileOperator.removeImage(oldImagePath);
       const oldImagePath = path.join("images", existingImageURL);
+      await fileOperator.removeImage(oldImagePath);
     }
 
     const updatedProduct = new Product(title, imageURL, price, description);
