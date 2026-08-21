@@ -8,6 +8,7 @@ const fs = require("fs");
 const PDFDocument = require("pdfkit");
 const stripe = require("../util/stripe-payment.js");
 const { pagination } = require("../util/pagination.js");
+const db = require('../util/database.js')
 
 const getIndex = async (req, res, next) => {
   const productsPerPage = 2;
@@ -278,9 +279,13 @@ const stripeWebhook = async (req, res, next) => {
 
       //create order
       try {
+        //implement postgre transactions function to prevent data lost
+        await db.query("BEGIN")
+        
         //chcek unique stripe id
         const uniqueStripeSessionID =
           await Orders.checkUniqueStripeID(stripeSessionID);
+
         if (uniqueStripeSessionID.rows.length === 0) {
           // unique id
           //add order into orders table
@@ -303,7 +308,9 @@ const stripeWebhook = async (req, res, next) => {
         } else {
           return res.sendStatus(200);
         }
+        await db.query("COMMIT")
       } catch (error) {
+        await db.query('ROLLBACK')
         const err = new Error(error);
         err.statusCode = 500;
         next(err);

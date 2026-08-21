@@ -43,7 +43,7 @@ const postAddProduct = async (req, res, next) => {
   }
 
   try {
-    const newProduct = new Product(test, title, imageURL, price, description);
+    const newProduct = new Product(title, imageURL, price, description);
     await newProduct.save();
     res.redirect("/admin/products");
   } catch (error) {
@@ -111,8 +111,8 @@ const postEditProduct = async (req, res, next) => {
     const existingImageURL = targetedProduct.rows[0].imageurl;
     const imageURL = image ? image.filename : existingImageURL;
     if (image) {
-      const oldImagePath = path.join("images", existingImageURL);
       await fileOperator.removeImage(oldImagePath);
+      const oldImagePath = path.join("images", existingImageURL);
     }
 
     const updatedProduct = new Product(title, imageURL, price, description);

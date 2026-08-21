@@ -2,7 +2,7 @@ const Product = require('../model/product')
 
 //this is an async function
 const pagination = async (req, res, productsPerPage, redirectPath, callback) => {
-    const page = Number(req.query.page) || 1
+    let page = Number(req.query.page) || 1
 
     if (!Number.isInteger(page) || page < 1) {
         page = 1;

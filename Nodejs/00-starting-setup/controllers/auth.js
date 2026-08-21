@@ -192,10 +192,13 @@ const postReset = (req, res, next) => {
       return res.redirect("/reset");
     }
     const token = buffer.toString("hex");
+    console.log("generated token: ", token);
     // Hash the token using SHA-256
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    console.log("generated hashed token: ", hashedToken);
 
     const expiryTokenDate = Date.now() + 3600000;
+
     //check if email exist in database
     try {
       const foundUser = await db.query("SELECT * FROM users WHERE email = $1", [
@@ -209,21 +212,23 @@ const postReset = (req, res, next) => {
         return res.redirect("/reset");
       }
       await db.query(
-        `UPDATE users 
-                    SET 
+        `UPDATE users
+                    SET
                     reset_token_hash = $1,
                     reset_token_expiry = $2
                     WHERE
                     email = $3`,
         [hashedToken, expiryTokenDate, email],
       );
+
+      //send reset password page link through email
       await transport.sendMail({
         from: "joshua250426.work@gmail.com",
         to: email,
         subject: "Reset Password Request",
         html: `
                         <p>You request a password reset</p>
-                        <p>Click this <a href="http://localhost:3000/reset/${token}">link</a> to reset your password</p>
+                        <p>Click this <a href="http://localhost:${process.env.PORT}/reset/${token}">link</a> to reset your password</p>
                         `,
       });
       console.log("Reset Email Sent Successfully!");
@@ -239,9 +244,13 @@ const postReset = (req, res, next) => {
 const getNewPasswordForm = async (req, res, next) => {
   try {
     const token = req.params.token;
+    console.log("params token: ", token);
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    console.log("get new form hashed token: ", hashedToken);
+    
     const user = await db.query(
       "SELECT id FROM users WHERE reset_token_hash = $1 AND reset_token_expiry > $2",
-      [token, Date.now()],
+      [hashedToken, Date.now()],
     );
 
     if (user.rows.length === 0) {
@@ -257,6 +266,7 @@ const getNewPasswordForm = async (req, res, next) => {
       token: token,
     });
   } catch (error) {
+    console.log(error);
     const err = new Error(error);
     err.statusCode = 500;
     next(err);
@@ -265,6 +275,7 @@ const getNewPasswordForm = async (req, res, next) => {
 
 const postNewPasswordForm = async (req, res, next) => {
   const token = req.body.token;
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex")
   const newPassword = req.body.password;
   const confirmPassword = req.body.confirmPassword;
   const errors = validationResult(req);
@@ -282,13 +293,14 @@ const postNewPasswordForm = async (req, res, next) => {
   try {
     // Hash the password
     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
     //need to double verify the validity
     const user = await db.query(
       `
             SELECT id FROM users 
             WHERE reset_token_hash = $1 
             AND reset_token_expiry > $2`,
-      [token, Date.now()],
+      [hashedToken, Date.now()],
     );
 
     if (user.rows.length === 0) {

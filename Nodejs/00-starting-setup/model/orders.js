@@ -23,7 +23,7 @@ class Orders {
             db.query(
                 `
                 SELECT * FROM orders WHERE stripe_session_id = $1
-                `, 
+                `,
                 [
                     stripeSessionID
                 ]
