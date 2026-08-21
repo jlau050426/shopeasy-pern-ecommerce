@@ -33,17 +33,14 @@ const getIndex = async (req, res, next) => {
   const productsPerPage = 2;
   await pagination(
     req,
-    res,
+    next,
     productsPerPage,
     "/",
     async (fetchPage, totalPages) => {
-      res.render("../views/shop/index.ejs", {
-        prods: fetchPage.rows,
-        pageTitle: "Shop",
-        path: "/",
-        totalPages: totalPages,
-        errorMessage: req.flash("error"),
-      });
+      res.status(200).json({
+        prods: fetchPage.rows[0],
+        totalPages: totalPages
+      })
     },
   );
 };

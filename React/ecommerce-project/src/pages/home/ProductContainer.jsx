@@ -9,7 +9,7 @@ export function ProductContainer({ product, fetchCart }) {
   async function AddToCart() {
     //make request from backend
     try {
-      await axios.post("/api/cart-items", {
+      await axios.post("/cart", {
         productId: product.id,
         quantity: productQuantity,
       });
@@ -24,10 +24,10 @@ export function ProductContainer({ product, fetchCart }) {
     //product-container to display all products
     <div key={product.id} className="product-container">
       <div className="product-image-container">
-        <img className="product-image" data-testid='product-image' src={product.image} />
+        <img className="product-image" data-testid='product-image' src={product.imageurl} />
       </div>
 
-      <div className="product-name limit-text-to-2-lines">{product.name}</div>
+      <div className="product-name limit-text-to-2-lines">{product.title}</div>
 
       <div className="product-rating-container">
         <img
@@ -40,7 +40,7 @@ export function ProductContainer({ product, fetchCart }) {
         </div>
       </div>
 
-      <div className="product-price">{formatMoney(product.priceCents)}</div>
+      <div className="product-price">{formatMoney(product.price)}</div>
 
       <div className="product-quantity-container">
         <select

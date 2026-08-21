@@ -12,10 +12,10 @@ export function HomePage({ cart, fetchCart }) {
     async function fetchProduct() {
       //assynchronous code to fetch data (promise)
       try {
-        const response = await axios.get("/api/products");
-        setProducts(response.data);
+        const response = await axios.get("/");
+        setProducts(response.data.prods);
       } catch (error) {
-        console.log(error);
+        console.log(error)
       }
     }
     fetchProduct();

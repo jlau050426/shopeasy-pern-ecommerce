@@ -1,7 +1,7 @@
 const Product = require('../model/product')
 
 //this is an async function
-const pagination = async (req, res, productsPerPage, redirectPath, callback) => {
+const pagination = async (req, next, productsPerPage, callback) => {
     let page = Number(req.query.page) || 1
 
     if (!Number.isInteger(page) || page < 1) {
@@ -17,15 +17,10 @@ const pagination = async (req, res, productsPerPage, redirectPath, callback) => 
         const totalProducts = countProducts.rows[0].count
         const totalPages = Math.ceil(totalProducts / productsPerPage)
 
-        if (totalPages > 0 && page > totalPages) {
-            return res.redirect(`${redirectPath}?page=1`)
-        }
-
         await callback(fetchPage, totalPages)
 
     } catch (error) {
-        req.flash("error", "error getting products")
-        return res.redirect(redirectPath)
+        next(error)
     }
 }
 
