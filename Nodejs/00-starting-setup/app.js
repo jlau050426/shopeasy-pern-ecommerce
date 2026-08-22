@@ -57,6 +57,8 @@ const verifyCsrfToken = require('./middleware/verifyCsrfToken')
 
 //bodyParser middleware
 app.use(bodyParser.urlencoded({ extended: false })); //submit url-form-data
+// JSON bodyParser
+app.use(express.json())
 
 //multer middleware
 app.use(multer(

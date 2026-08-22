@@ -23,7 +23,7 @@ export function HomePage({ cart, fetchCart }) {
 
   //search mechanism
   const filteredProducts = products.filter((product) => {
-    return product.name.toLowerCase().includes(search.toLowerCase());
+    return product.title.toLowerCase().includes(search.toLowerCase());
   });
 
   return (

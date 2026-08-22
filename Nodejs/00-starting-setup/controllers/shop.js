@@ -8,7 +8,7 @@ const fs = require("fs");
 const PDFDocument = require("pdfkit");
 const stripe = require("../util/stripe-payment.js");
 const { pagination } = require("../util/pagination.js");
-const db = require('../util/database.js')
+const db = require("../util/database.js");
 
 // const getIndex = async (req, res, next) => {
 //   const productsPerPage = 2;
@@ -35,12 +35,11 @@ const getIndex = async (req, res, next) => {
     req,
     next,
     productsPerPage,
-    "/",
     async (fetchPage, totalPages) => {
       res.status(200).json({
-        prods: fetchPage.rows[0],
-        totalPages: totalPages
-      })
+        prods: fetchPage.rows,
+        totalPages: totalPages,
+      });
     },
   );
 };
@@ -65,21 +64,38 @@ const getProducts = async (req, res, next) => {
   );
 };
 
+// const getProduct = async (req, res, next) => {
+//   const id = req.params.productID;
+//   try {
+//     const result = await Product.findProductByID(id);
+//     if (!result.rows[0]) {
+//       return res.status(404).render("../views/404.ejs", {
+//         pageTitle: "Product Not Found",
+//         path: "",
+//       });
+//     }
+//     res.render("../views/shop/product-detail.ejs", {
+//       product: result.rows[0],
+//       pageTitle: "Product Details",
+//       path: "/products",
+//     });
+//   } catch (error) {
+//     const err = new Error(error);
+//     err.statusCode = 500;
+//     next(err);
+//   }
+// };
+
 const getProduct = async (req, res, next) => {
   const id = req.params.productID;
   try {
     const result = await Product.findProductByID(id);
     if (!result.rows[0]) {
-      return res.status(404).render("../views/404.ejs", {
-        pageTitle: "Product Not Found",
-        path: "",
-      });
+      return res.status(404).json({message: "No product Found!"})
     }
-    res.render("../views/shop/product-detail.ejs", {
-      product: result.rows[0],
-      pageTitle: "Product Details",
-      path: "/products",
-    });
+    res.status(200).json({
+      product: result.rows[0]
+    })
   } catch (error) {
     const err = new Error(error);
     err.statusCode = 500;
@@ -88,11 +104,21 @@ const getProduct = async (req, res, next) => {
 };
 
 const postCart = async (req, res, next) => {
-  const productID = req.body.prodID;
-  const sessionUserID = req.session.sessionUserID;
+  const productID = req.body.productId;
+  const quantity = req.body.quantity || 1;
+  const sessionUserID = req.session.sessionUserID || 1;
+
   try {
-    await Cart.addCart(productID, sessionUserID);
-    res.redirect("/cart");
+    if (!productID) {
+      return res.status(400).json({ error: "Product ID is required"})
+    }
+
+    await Cart.addCart(productID, quantity, sessionUserID);
+
+    //return JSON information
+    return res.status(200).json({
+      message: "Product Added Successfully",
+    });
   } catch (error) {
     const err = new Error(error);
     err.statusCode = 500;
@@ -296,8 +322,8 @@ const stripeWebhook = async (req, res, next) => {
       //create order
       try {
         //implement postgre transactions function to prevent data lost
-        await db.query("BEGIN")
-        
+        await db.query("BEGIN");
+
         //chcek unique stripe id
         const uniqueStripeSessionID =
           await Orders.checkUniqueStripeID(stripeSessionID);
@@ -324,9 +350,9 @@ const stripeWebhook = async (req, res, next) => {
         } else {
           return res.sendStatus(200);
         }
-        await db.query("COMMIT")
+        await db.query("COMMIT");
       } catch (error) {
-        await db.query('ROLLBACK')
+        await db.query("ROLLBACK");
         const err = new Error(error);
         err.statusCode = 500;
         next(err);

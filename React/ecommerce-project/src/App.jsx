@@ -1,4 +1,5 @@
 import { HomePage } from "./pages/home/HomePage";
+import { ProductDetails } from "./pages/home/ProductDetails";
 import { CheckoutPage } from "./pages/checkout/CheckoutPage";
 import { OrdersPage } from "./pages/order/OrdersPage";
 import { TrackingPage } from "./pages/tracking/TrackingPage";
@@ -33,6 +34,10 @@ function App() {
       <Route
         path="/"
         element={<HomePage cart={cart} fetchCart={fetchCart} />}
+      />
+      <Route
+      path="/product/:productID"
+      element={<ProductDetails cart={cart}/>}
       />
       <Route
         path="*"

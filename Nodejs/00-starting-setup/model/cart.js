@@ -4,16 +4,17 @@ const db = require('../util/database')
 class Cart {
 
     //we will add the existing product into cart instead
-    static addCart(id, sessionUserID) {
+    static addCart(id, quantity = 1, sessionUserID) {
         return (
             db.query(
                 `INSERT INTO cart(product_id, quantity, user_id)
-                VALUES($1, 1, $2)
+                VALUES($1, $2, $3)
                 ON CONFLICT(product_id, user_id)
                 DO UPDATE
-                SET quantity = cart.quantity + 1`,
+                SET quantity = cart.quantity + $2`,
                 [
                     id,
+                    quantity,
                     sessionUserID
                 ]
             )
