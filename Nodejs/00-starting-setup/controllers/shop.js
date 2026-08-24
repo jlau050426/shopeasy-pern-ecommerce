@@ -10,25 +10,6 @@ const stripe = require("../util/stripe-payment.js");
 const { pagination } = require("../util/pagination.js");
 const db = require("../util/database.js");
 
-// const getIndex = async (req, res, next) => {
-//   const productsPerPage = 2;
-//   await pagination(
-//     req,
-//     res,
-//     productsPerPage,
-//     "/",
-//     async (fetchPage, totalPages) => {
-//       res.render("../views/shop/index.ejs", {
-//         prods: fetchPage.rows,
-//         pageTitle: "Shop",
-//         path: "/",
-//         totalPages: totalPages,
-//         errorMessage: req.flash("error"),
-//       });
-//     },
-//   );
-// };
-
 const getIndex = async (req, res, next) => {
   const productsPerPage = 2;
   await pagination(
@@ -148,13 +129,42 @@ const getCart = async (req, res, next) => {
   }
 };
 
+const getAvailableDeliveryOptionsDetails = async(req, res, next) => {
+  try {
+    const result = await Product.fetchDeliveryOptionsDetails()
+    res.status(200).json({
+      message: "Successfully fetch delivery options details",
+      deliveryOptionsDetails: result.rows
+    })
+  } catch (error) {
+    const err = new Error(error)
+    err.statusCode = 500
+    next(err)
+  }
+}
+
+const updateCartDeliveryOption = async (req, res, next) => {
+  const cartId = req.params.id
+  const deliveryOptionId = req.body.deliveryOptionId
+  const userId = req.session.sessionUserID
+
+  try {
+    await Cart.updateCartDeliveryOptions(deliveryOptionId, cartId, userId)
+    res.status(204).send()
+  } catch (error) {
+    const err = new Error("Internal Server Error!")
+    err.statusCode = 500
+    next(err)
+  }
+
+}
+
 const removeCart = async (req, res, next) => {
-  const currentCartID = req.body.productID;
+  const currentCartID = req.params.id;
   const userID = req.session.sessionUserID;
   try {
     await Cart.deleteCart(currentCartID, userID);
-    console.log("Cart deleted successfully!");
-    res.redirect("/cart");
+    res.status(204).send() 
   } catch (error) {
     const err = new Error(error);
     err.statusCode = 500;
@@ -560,6 +570,8 @@ exports.getIndex = getIndex;
 exports.getOrders = getOrders;
 exports.getProduct = getProduct;
 exports.postCart = postCart;
+exports.getAvailableDeliveryOptionsDetails = getAvailableDeliveryOptionsDetails
+exports.updateCartDeliveryOption = updateCartDeliveryOption
 exports.removeCart = removeCart;
 exports.getInvoice = getInvoice;
 exports.stripeWebhook = stripeWebhook;

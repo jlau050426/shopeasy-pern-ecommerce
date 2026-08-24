@@ -1,35 +1,39 @@
 import dayjs from "dayjs";
+import { useState } from "react";
 import { formatMoney } from "../../utils/money";
 import axios from "axios";
 import { deleteCartItem } from "../../utils/deleteCartItem";
 
 export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
+  const [currentTime] = useState(() => Date.now());
   return (
     <div className="order-summary">
       {deliveryOptions.length > 0 &&
         cart.map((cartItem) => {
           const selectedDeliveryOption = deliveryOptions.find(
             (deliveryOption) => {
-              return deliveryOption.id === cartItem.deliveryOptionId;
+              return deliveryOption.id === cartItem.delivery_options;
             },
           );
 
+          const estimatedDeliveryTimeMs =
+            currentTime +
+            selectedDeliveryOption.delivery_days * 24 * 60 * 60 * 1000;
+
           return (
-            <div key={cartItem.productId} className="cart-item-container">
+            <div key={cartItem.id} className="cart-item-container">
               <div className="delivery-date">
                 Delivery date:{" "}
-                {dayjs(selectedDeliveryOption.estimatedDeliveryTimeMs).format(
-                  "dddd, MMMM D",
-                )}
+                {dayjs(estimatedDeliveryTimeMs).format("dddd, MMMM D")}
               </div>
 
               <div className="cart-item-details-grid">
-                <img className="product-image" src={cartItem.product.image} />
+                <img className="product-image" src={cartItem.imageurl} />
 
                 <div className="cart-item-details">
-                  <div className="product-name">{cartItem.product.name}</div>
+                  <div className="product-name">{cartItem.title}</div>
                   <div className="product-price">
-                    {formatMoney(cartItem.product.priceCents)}
+                    {formatMoney(cartItem.price)}
                   </div>
                   <div className="product-quantity">
                     <span>
@@ -53,23 +57,26 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
                   </div>
 
                   {deliveryOptions.map((deliveryOption) => {
+                    
                     //update delivery option function
                     async function UpdateDeliveryOption() {
-                      await axios.put(
-                        `/api/cart-items/${cartItem.productId}`,
-                        {
-                          deliveryOptionId: deliveryOption.id,
-                        },
-                      );
+                      await axios.put(`/api/cart-items/${cartItem.id}`, {
+                        deliveryOptionId: deliveryOption.id,
+                      });
                       await fetchCart();
                     }
+
                     //determine the price
                     let priceString = "FREE Shipping"; //default of free shipping
 
                     //override if price is not FREE
-                    if (deliveryOption.priceCents > 0) {
-                      priceString = `${formatMoney(deliveryOption.priceCents)} - Shipping`;
+                    if (deliveryOption.price_cents > 0) {
+                      priceString = `${formatMoney(deliveryOption.price_cents)} - Shipping`;
                     }
+
+                    const optionDeliveryTimeMs =
+                      currentTime +
+                      deliveryOption.delivery_days * 24 * 60 * 60 * 1000;
 
                     return (
                       <div
@@ -80,18 +87,18 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
                         <input
                           type="radio"
                           checked={
-                            deliveryOption.id === cartItem.deliveryOptionId
+                            deliveryOption.id === cartItem.delivery_options
                           }
                           onChange={() => {}}
                           className="delivery-option-input"
                           //separate by dfferent orders
-                          name={`delivery-option-${cartItem.productId}`}
+                          name={`delivery-option-${cartItem.product_id}`}
                         />
                         <div>
                           <div className="delivery-option-date">
-                            {dayjs(
-                              deliveryOption.estimatedDeliveryTimeMs,
-                            ).format("dddd, MMMM D")}
+                            {dayjs(optionDeliveryTimeMs).format(
+                              "dddd, MMMM D",
+                            )}
                           </div>
                           <div className="delivery-option-price">
                             {priceString}

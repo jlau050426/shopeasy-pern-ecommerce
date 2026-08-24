@@ -8,19 +8,21 @@ import { Link } from "react-router-dom";
 import { cartQuantity } from "../../utils/cartQuantity";
 
 export function CheckoutPage({ cart, fetchCart }) {
+
   const totalQuantity = cartQuantity(cart);
 
   const [deliveryOptions, setDeliveryOptions] = useState([]);
   //state for payment summary
   const [paymentSummary, setPaymentSummary] = useState(null);
 
+  //function to getDeliveryOptions
   useEffect(() => {
     async function getDeliveryOptions() {
       try {
         const response = await axios.get(
-          "/api/delivery-options?expand=estimatedDeliveryTime",
+          "/delivery-options",
         );
-        setDeliveryOptions(response.data);
+        setDeliveryOptions(response.data.deliveryOptionsDetails);
       } catch (error) {
         console.log(error);
       }
@@ -28,6 +30,7 @@ export function CheckoutPage({ cart, fetchCart }) {
 
     getDeliveryOptions();
 
+    //function to getPaymentSummary
     async function getPaymentSummary() {
       try {
         const response = await axios.get("/api/payment-summary");

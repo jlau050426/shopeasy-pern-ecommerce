@@ -25,14 +25,15 @@ class Product {
         )
     };
 
+    //fetch all cart
     static fetchPage(limit, offset){
         return db.query(`
-            SELECT * 
+            SELECT *
             FROM products
             ORDER BY id
             LIMIT $1
             OFFSET $2
-            `, 
+            `,
             [
                 limit,
                 offset
@@ -84,6 +85,15 @@ class Product {
             [
                 id
             ]
+        )
+    }
+
+    static fetchDeliveryOptionsDetails(){
+        return db.query(
+            `
+            SELECT delivery_days, price_cents
+            FROM delivery_options
+            `
         )
     }
 }
