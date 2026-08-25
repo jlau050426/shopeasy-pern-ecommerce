@@ -11,9 +11,7 @@ export function OrdersPage({ cart }) {
   useEffect(() => {
     async function getOrders() {
       try {
-        const response = await axios.get(
-          "/api/orders?expand=products",
-        );
+        const response = await axios.get("/checkout/orders");
         setOrders(response.data);
       } catch (error) {
         console.log(error);
@@ -23,6 +21,7 @@ export function OrdersPage({ cart }) {
     getOrders();
   }, []);
 
+  // delete order function (order reveived)
   async function handleOrderReceived(orderId) {
     try {
       // Delete the order from the backend.
@@ -40,7 +39,6 @@ export function OrdersPage({ cart }) {
       console.log(error);
     }
   }
-
 
   return (
     <>

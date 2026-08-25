@@ -18,6 +18,7 @@ router.put(`/api/cart-items/:id`, isAuth, shopController.updateCartDeliveryOptio
 router.get('/checkout/orders', isAuth, shopController.getOrders)
 router.get('/checkout', isAuth, shopController.getCheckout)
 router.post('/checkout',isAuth,shopController.postCheckout);
+router.delete('/orders/:orderId', isAuth, shopController.removeOrder)
 router.get('/order/:orderID', isAuth, shopController.getInvoice)
 
 module.exports = router;

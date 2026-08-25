@@ -210,20 +210,19 @@ const getOrders = async (req, res, next) => {
 
       //push object details in object format
       groupedOrders[order.order_id].items.push({
+        product_id: order.product_id,
         title: order.title,
         quantity: order.quantity,
         price: order.price,
         imageurl: order.imageurl,
         total_price: order.total_price,
+        estimated_delivery_days: order.delivery_days,
       });
     });
 
-    res.render("../views/shop/orders.ejs", {
-      pageTitle: "Your Orders",
-      path: "/orders",
+    res.status(200).json({
       orders: Object.values(groupedOrders),
       orderTotalPrice: orderTotalPrice,
-      errorMessage: req.flash("error"),
     });
   } catch (error) {
     const err = new Error(error);
@@ -314,6 +313,9 @@ const postCheckout = async (req, res, next) => {
 
 //stripe webhook handler
 const stripeWebhook = async (req, res, next) => {
+  const client = await db.connect();
+  //get current time
+  const currentTime = Date.now();
   let event;
   // Get the signature sent by Stripe
   const signature = req.headers["stripe-signature"];
@@ -339,14 +341,14 @@ const stripeWebhook = async (req, res, next) => {
       //create order
       try {
         //implement postgre transactions function to prevent data lost
-        await db.query("BEGIN");
+        await client.query("BEGIN");
 
         //chcek unique stripe id
         const uniqueStripeSessionID =
           await Orders.checkUniqueStripeID(stripeSessionID);
 
         if (uniqueStripeSessionID.rows.length > 0) {
-          await db.query("COMMIT");
+          await client.query("COMMIT");
           return res.sendStatus(200);
         }
 
@@ -364,15 +366,22 @@ const stripeWebhook = async (req, res, next) => {
           const productID = item.product_id;
           const quantity = item.quantity;
           const price = item.price;
-
-          await Orders.postOrderItems(orderID, productID, quantity, price);
+          const deliveryDays = currentTime + item.delivery_days;
+          await Orders.postOrderItems(
+            orderID,
+            productID,
+            quantity,
+            price,
+            deliveryDays,
+            sessionUserID,
+          );
         }
         //remove cart after ordering
         await Cart.deleteOrderedCart(sessionUserID);
-        await db.query("COMMIT");
+        await client.query("COMMIT");
         return res.sendStatus(200);
       } catch (error) {
-        await db.query("ROLLBACK");
+        await client.query("ROLLBACK");
         const err = new Error(error);
         err.statusCode = 500;
         next(err);
@@ -385,6 +394,22 @@ const stripeWebhook = async (req, res, next) => {
       console.log(`Unhandled event type ${event.type}`);
   }
   return res.sendStatus(200);
+};
+
+const removeOrder = async (req, res, next) => {
+  const orderId = req.params.orderId;
+  const sessionUserID = req.session.sessionUserID;
+
+  try {
+    //remove from orders table
+    await Orders.deleteOrderItems(sessionUserID, orderId);
+    await Orders.deleteOrder(sessionUserID, orderId);
+    res.status(204).send();
+  } catch (error) {
+    const err = new Error("Order Removal Failed!");
+    err.statusCode = 500;
+    next(err);
+  }
 };
 
 const getInvoice = async (req, res, next) => {
@@ -405,10 +430,9 @@ const getInvoice = async (req, res, next) => {
   try {
     const ordersByID = await Orders.fetchOrdersByID(userID, orderID);
     if (ordersByID.rows.length === 0) {
-      return res.status(404).render("../views/404.ejs", {
-        pageTitle: "Order Not Found",
-        path: "",
-      });
+      const err = new Error("Order Not Found")
+      err.statusCode = 404
+      throw err
     }
     const creationDateTime = ordersByID.rows[0].created_at.toLocaleDateString();
 
@@ -562,8 +586,10 @@ const getInvoice = async (req, res, next) => {
     });
 
     writeStream.on("error", (error) => {
-      console.error(error);
-      next(error);
+      const err = new Error(error)
+      console.error(err);
+      err.statusCode = 500
+      next(err);
     });
   } catch (error) {
     const err = new Error(error);
@@ -583,5 +609,6 @@ exports.postCart = postCart;
 exports.getAvailableDeliveryOptionsDetails = getAvailableDeliveryOptionsDetails;
 exports.updateCartDeliveryOption = updateCartDeliveryOption;
 exports.removeCart = removeCart;
+exports.removeOrder = removeOrder;
 exports.getInvoice = getInvoice;
 exports.stripeWebhook = stripeWebhook;

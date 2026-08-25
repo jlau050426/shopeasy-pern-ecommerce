@@ -1,57 +1,39 @@
-const db = require('../util/database')
+const db = require("../util/database");
 
 class Orders {
-
-    static addOrders(sessionUserID, stripeSessionID) {
-        return (
-            db.query(
-                `
+  static async addOrders(sessionUserID, stripeSessionID) {
+    return db.query(
+      `
                 INSERT INTO orders (user_id, stripe_session_id)
                 VALUES ($1, $2)
                 RETURNING id
                 `,
-                [
-                    sessionUserID,
-                    stripeSessionID
-                ]
-            )
-        )
-    }
+      [sessionUserID, stripeSessionID],
+    );
+  }
 
-    static checkUniqueStripeID(stripeSessionID){
-        return(
-            db.query(
-                `
+  static async checkUniqueStripeID(stripeSessionID) {
+    return db.query(
+      `
                 SELECT * FROM orders WHERE stripe_session_id = $1
                 `,
-                [
-                    stripeSessionID
-                ]
-            )
-        )
-    }
+      [stripeSessionID],
+    );
+  }
 
-    static postOrderItems(orderID, productID, quantity, price) {
-        return (
-            db.query(
-                `
-                INSERT INTO order_items (order_id, product_id, quantity, price)
-                VALUES ($1, $2, $3, $4)
-                `,
-                [
-                    orderID,
-                    productID,
-                    quantity,
-                    price
-                ]
-            )
-        )
-    }
+  static async postOrderItems(orderID, productID, quantity, price, deliveryDays, sessionUserID) {
+    return db.query(
+      `INSERT INTO order_items
+      (order_id, product_id, quantity, price, delivery_days, user_id)
+      VALUES 
+      ($1, $2, $3, $4, $5, $6)`,
+      [orderID, productID, quantity, price, deliveryDays, sessionUserID],
+    );
+  }
 
-    static fetchAllOrders(sessionUserID) {
-        return (
-            db.query(
-                `
+  static fetchAllOrders(sessionUserID) {
+    return db.query(
+      `
                 SELECT
                 orders.id AS order_id,
                 orders.status,
@@ -60,6 +42,7 @@ class Orders {
                 order_items.quantity,
                 order_items.price,
                 (order_items.quantity * order_items.price) AS total_price,
+                order_items.delivery_days,
 				products.title,
 				products.imageurl
                 FROM order_items
@@ -69,17 +52,13 @@ class Orders {
 				ON order_items.product_id = products.id
                 WHERE orders.user_id = $1
                 `,
-                [
-                    sessionUserID
-                ]
-            )
-        )
-    }
+      [sessionUserID],
+    );
+  }
 
-    static fetchOrdersByID(sessionUserID, orderID) {
-        return (
-            db.query(
-                `
+  static fetchOrdersByID(sessionUserID, orderID) {
+    return db.query(
+      `
                 SELECT
                 orders.id AS order_id,
                 orders.status,
@@ -99,14 +78,34 @@ class Orders {
                 AND
                 orders.id = $2
                 `,
-                [
-                    sessionUserID,
-                    orderID
-                ]
-            )
-        )
-    }
+      [sessionUserID, orderID],
+    );
+  }
 
+  static deleteOrder(sessionUserID, orderId) {
+    return db.query(
+      `
+                DELETE FROM orders
+                WHERE
+                user_id = $1
+                AND
+                id = $2
+                `,
+      [sessionUserID, orderId],
+    );
+  }
+
+  static deleteOrderItems(sessionUserID, orderId) {
+    return db.query(
+      `
+                DELETE FROM order_items
+                WHERE
+                user_id = $1
+                order_id = $2
+                `,
+      [sessionUserID, orderId],
+    );
+  }
 }
 
-module.exports = Orders
+module.exports = Orders;

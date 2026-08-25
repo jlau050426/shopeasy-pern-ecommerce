@@ -14,7 +14,7 @@ class Cart {
     );
   }
 
-  static fetchAllCart(sessionUserID) {
+  static async fetchAllCart(sessionUserID) {
     return db.query(
       `
                 SELECT
@@ -59,7 +59,7 @@ class Cart {
     );
   }
 
-  static deleteOrderedCart(sessionUserID) {
+  static async deleteOrderedCart(sessionUserID) {
     return db.query(`DELETE FROM cart WHERE user_id = $1`, [sessionUserID]);
   }
 }
