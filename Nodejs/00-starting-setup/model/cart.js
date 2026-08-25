@@ -26,10 +26,13 @@ class Cart {
                 products.price,
                 products.description,
                 products.imageurl,
-                (cart.quantity * products.price) AS item_total
+                (cart.quantity * products.price) AS item_total,
+                delivery_options.price_cents
                 FROM cart
                 INNER JOIN products
                 ON cart.product_id = products.id
+                INNER JOIN delivery_options
+                ON cart.delivery_options = delivery_options.id
                 WHERE cart.user_id = $1`,
       [sessionUserID],
     );
@@ -47,15 +50,13 @@ class Cart {
 
   //update cart delivery options
   static updateCartDeliveryOptions(deliveryOptions, cartID, sessionUserID) {
-    return `
-            UPDATE cart
-            SET delivery_options = $1
-            WHERE id = $2 AND user_id = $3
-            `, [
-                deliveryOptions,
-                cartID,
-                sessionUserID
-            ];
+    return db.query(
+      `
+        UPDATE cart
+        SET delivery_options = $1
+        WHERE id = $2 AND user_id = $3`,
+      [deliveryOptions, cartID, sessionUserID],
+    );
   }
 
   static deleteOrderedCart(sessionUserID) {

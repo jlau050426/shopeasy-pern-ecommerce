@@ -36,8 +36,9 @@ export function HomePage({ cart, fetchCart }) {
           {filteredProducts.map((product) => {
             return (
               <ProductContainer
-                product={product}
-                fetchCart={fetchCart}
+              key={product.id} //react map function need to associate with unique key
+              product={product}
+              fetchCart={fetchCart}
               ></ProductContainer>
             );
           })}

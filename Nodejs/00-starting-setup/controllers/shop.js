@@ -72,11 +72,11 @@ const getProduct = async (req, res, next) => {
   try {
     const result = await Product.findProductByID(id);
     if (!result.rows[0]) {
-      return res.status(404).json({message: "No product Found!"})
+      return res.status(404).json({ message: "No product Found!" });
     }
     res.status(200).json({
-      product: result.rows[0]
-    })
+      product: result.rows[0],
+    });
   } catch (error) {
     const err = new Error(error);
     err.statusCode = 500;
@@ -91,7 +91,7 @@ const postCart = async (req, res, next) => {
 
   try {
     if (!productID) {
-      return res.status(400).json({ error: "Product ID is required"})
+      return res.status(400).json({ error: "Product ID is required" });
     }
 
     await Cart.addCart(productID, quantity, sessionUserID);
@@ -112,15 +112,22 @@ const getCart = async (req, res, next) => {
   try {
     const result = await Cart.fetchAllCart(sessionUserID);
     let cartTotal = 0;
+    let shippingCostTotal = 0;
+
     const cart = result.rows;
+
     cart.forEach((c) => {
       cartTotal += Number(c.item_total);
     });
-    res.render("../views/shop/cart.ejs", {
-      grandTotal: cartTotal,
+
+    cart.forEach((c) => {
+      shippingCostTotal += Number(c.price_cents);
+    });
+
+    res.status(200).json({
       cart: cart,
-      pageTitle: "Your Cart",
-      path: "/cart",
+      grandTotal: cartTotal,
+      shippingCostTotal: shippingCostTotal,
     });
   } catch (error) {
     const err = new Error(error);
@@ -129,42 +136,41 @@ const getCart = async (req, res, next) => {
   }
 };
 
-const getAvailableDeliveryOptionsDetails = async(req, res, next) => {
+const getAvailableDeliveryOptionsDetails = async (req, res, next) => {
   try {
-    const result = await Product.fetchDeliveryOptionsDetails()
+    const result = await Product.fetchDeliveryOptionsDetails();
     res.status(200).json({
       message: "Successfully fetch delivery options details",
-      deliveryOptionsDetails: result.rows
-    })
+      deliveryOptionsDetails: result.rows,
+    });
   } catch (error) {
-    const err = new Error(error)
-    err.statusCode = 500
-    next(err)
+    const err = new Error(error);
+    err.statusCode = 500;
+    next(err);
   }
-}
+};
 
 const updateCartDeliveryOption = async (req, res, next) => {
-  const cartId = req.params.id
-  const deliveryOptionId = req.body.deliveryOptionId
-  const userId = req.session.sessionUserID
+  const cartId = req.params.id;
+  const deliveryOptionId = req.body.deliveryOptionId;
+  const userId = req.session.sessionUserID;
 
   try {
-    await Cart.updateCartDeliveryOptions(deliveryOptionId, cartId, userId)
-    res.status(204).send()
+    await Cart.updateCartDeliveryOptions(deliveryOptionId, cartId, userId);
+    res.status(204).send();
   } catch (error) {
-    const err = new Error("Internal Server Error!")
-    err.statusCode = 500
-    next(err)
+    const err = new Error("Internal Server Error!");
+    err.statusCode = 500;
+    next(err);
   }
-
-}
+};
 
 const removeCart = async (req, res, next) => {
   const currentCartID = req.params.id;
   const userID = req.session.sessionUserID;
   try {
     await Cart.deleteCart(currentCartID, userID);
-    res.status(204).send() 
+    res.status(204).send();
   } catch (error) {
     const err = new Error(error);
     err.statusCode = 500;
@@ -254,7 +260,7 @@ const getCheckout = async (req, res, next) => {
   }
 };
 
-//direct to Stripe API
+//direct to Stripe API (place order)
 const postCheckout = async (req, res, next) => {
   const sessionUserID = req.session.sessionUserID;
 
@@ -264,8 +270,9 @@ const postCheckout = async (req, res, next) => {
     const cart = result.rows;
 
     if (cart.length === 0) {
-      req.flash("error", "your cart is empty");
-      return res.redirect("/cart");
+      const err = new Error("Your Cart is Empty!");
+      err.statusCode = 404;
+      throw err;
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -295,7 +302,9 @@ const postCheckout = async (req, res, next) => {
 
       cancel_url: `${req.protocol}://${req.get("host")}/checkout`,
     });
-    return res.redirect(303, session.url);
+    res.status(201).json({
+      checkoutUrl: session.url,
+    });
   } catch (error) {
     const err = new Error(error);
     err.statusCode = 500;
@@ -316,9 +325,8 @@ const stripeWebhook = async (req, res, next) => {
       process.env.STRIPE_WEBHOOK_SECRET,
     );
   } catch (error) {
-    const err = new Error(error);
-    err.statusCode = 500;
-    next(err);
+    console.log(`⚠️ Webhook signature verification failed.`, error.message);
+    return response.sendStatus(400);
   }
 
   // Handle the event
@@ -327,7 +335,6 @@ const stripeWebhook = async (req, res, next) => {
       const session = event.data.object;
       const sessionUserID = session.metadata.user_id;
       const stripeSessionID = session.id;
-      console.log(stripeSessionID);
 
       //create order
       try {
@@ -338,29 +345,32 @@ const stripeWebhook = async (req, res, next) => {
         const uniqueStripeSessionID =
           await Orders.checkUniqueStripeID(stripeSessionID);
 
-        if (uniqueStripeSessionID.rows.length === 0) {
-          // unique id
-          //add order into orders table
-          const addOrders = await Orders.addOrders(
-            sessionUserID,
-            stripeSessionID,
-          );
-          //fetching cart information to be insert into order_items table
-          const cart = await Cart.fetchAllCart(sessionUserID);
-          const orderID = addOrders.rows[0].id;
-          for (const item of cart.rows) {
-            const productID = item.product_id;
-            const quantity = item.quantity;
-            const price = item.price;
-
-            await Orders.postOrderItems(orderID, productID, quantity, price);
-          }
-          //remove cart after ordering
-          await Cart.deleteOrderedCart(sessionUserID);
-        } else {
+        if (uniqueStripeSessionID.rows.length > 0) {
+          await db.query("COMMIT");
           return res.sendStatus(200);
         }
+
+        // unique id
+        //add order into orders table
+        const addOrders = await Orders.addOrders(
+          sessionUserID,
+          stripeSessionID,
+        );
+
+        //fetching cart information to be insert into order_items table
+        const cart = await Cart.fetchAllCart(sessionUserID);
+        const orderID = addOrders.rows[0].id;
+        for (const item of cart.rows) {
+          const productID = item.product_id;
+          const quantity = item.quantity;
+          const price = item.price;
+
+          await Orders.postOrderItems(orderID, productID, quantity, price);
+        }
+        //remove cart after ordering
+        await Cart.deleteOrderedCart(sessionUserID);
         await db.query("COMMIT");
+        return res.sendStatus(200);
       } catch (error) {
         await db.query("ROLLBACK");
         const err = new Error(error);
@@ -570,8 +580,8 @@ exports.getIndex = getIndex;
 exports.getOrders = getOrders;
 exports.getProduct = getProduct;
 exports.postCart = postCart;
-exports.getAvailableDeliveryOptionsDetails = getAvailableDeliveryOptionsDetails
-exports.updateCartDeliveryOption = updateCartDeliveryOption
+exports.getAvailableDeliveryOptionsDetails = getAvailableDeliveryOptionsDetails;
+exports.updateCartDeliveryOption = updateCartDeliveryOption;
 exports.removeCart = removeCart;
 exports.getInvoice = getInvoice;
 exports.stripeWebhook = stripeWebhook;

@@ -33,7 +33,7 @@ export function CheckoutPage({ cart, fetchCart }) {
     //function to getPaymentSummary
     async function getPaymentSummary() {
       try {
-        const response = await axios.get("/api/payment-summary");
+        const response = await axios.get("/cart");
         setPaymentSummary(response.data);
       } catch (error) {
         console.log(error);

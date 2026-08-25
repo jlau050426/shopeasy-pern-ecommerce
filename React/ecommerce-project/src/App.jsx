@@ -17,7 +17,7 @@ function App() {
   async function fetchCart() {
     try {
       const response = await axios.get("/cart");
-      setCart(response.data);
+      setCart(response.data.cart);
     } catch (error) {
       console.log(error);
     }
@@ -48,7 +48,7 @@ function App() {
         element={<CheckoutPage cart={cart} fetchCart={fetchCart} />}
       />
       <Route
-      path="orders"
+      path="/checkout/orders"
       element={<OrdersPage cart={cart} />} 
       />
       <Route

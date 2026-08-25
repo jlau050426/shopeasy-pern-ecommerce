@@ -1,54 +1,73 @@
 import { formatMoney } from "../../utils/money";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { cartQuantity } from "../../utils/cartQuantity";
 
-export function PaymentSummary({ paymentSummary, fetchCart }) {
+export function PaymentSummary({ cart, paymentSummary, fetchCart }) {
   const navigate = useNavigate();
+
   const CreateOrder = async () => {
-    await axios.post("/api/orders");
+    const response = await axios.post("/checkout");
+
+    //ejs render page to Stripe page, however React will locate windows to Stripe Page
+    window.location.href = response.data.checkoutUrl
     // after order placed, remove that items from cart and redirect to order page
     await fetchCart();
     navigate("/orders");
   };
 
+  if (!paymentSummary) {
+    return null
+  }
+
+  const totalItems = cartQuantity(cart)
+  const grandTotal = paymentSummary.grandTotal
+  const shippingCostTotal = paymentSummary.shippingCostTotal
+  const totalCostBeforeTax = grandTotal + shippingCostTotal
+  // 10 percent tax
+  const tax = totalCostBeforeTax * 0.10
+  const totalCostCents = totalCostBeforeTax + tax
+
+
   return (
     <div className="payment-summary">
       <div className="payment-summary-title">Payment Summary</div>
 
+      {/* check whether paymentSummary is null during initial loading, if yes, stop immediately */}
       {paymentSummary && (
         <>
           <div className="payment-summary-row">
-            <div>Items ({paymentSummary.totalItems}) :</div>
+            <div>Items ({totalItems}) :</div>
             <div className="payment-summary-money">
-              {formatMoney(paymentSummary.productCostCents)}
+              {formatMoney(grandTotal)}
             </div>
           </div>
 
           <div className="payment-summary-row">
-            <div>Shippinc &amp; handling:</div>
+            <div>Shipping &amp; handling:</div>
             <div className="payment-summary-money">
-              {formatMoney(paymentSummary.shippingCostCents)}
+              {formatMoney(shippingCostTotal)}
             </div>
           </div>
 
           <div className="payment-summary-row subtotal-row">
             <div>Total before tax:</div>
             <div className="payment-summary-money">
-              {formatMoney(paymentSummary.totalCostBeforeTaxCents)}
+              {formatMoney(totalCostBeforeTax)}
             </div>
           </div>
 
           <div className="payment-summary-row">
             <div>Estimated tax (10%):</div>
             <div className="payment-summary-money">
-              {formatMoney(paymentSummary.taxCents)}
+              {formatMoney(tax)}
             </div>
           </div>
 
           <div className="payment-summary-row total-row">
             <div>Order total:</div>
             <div className="payment-summary-money">
-              {formatMoney(paymentSummary.totalCostCents)}
+              {formatMoney(totalCostCents)}
             </div>
           </div>
 

@@ -57,13 +57,17 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
                   </div>
 
                   {deliveryOptions.map((deliveryOption) => {
-                    
                     //update delivery option function
                     async function UpdateDeliveryOption() {
-                      await axios.put(`/api/cart-items/${cartItem.id}`, {
-                        deliveryOptionId: deliveryOption.id,
-                      });
-                      await fetchCart();
+                      try {
+                        await axios.put(`/api/cart-items/${cartItem.id}`, {
+                          deliveryOptionId: deliveryOption.id,
+                        });
+                        await fetchCart();
+                      } catch (error) {
+                        console.log(error);
+                        
+                      }
                     }
 
                     //determine the price
@@ -96,9 +100,7 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
                         />
                         <div>
                           <div className="delivery-option-date">
-                            {dayjs(optionDeliveryTimeMs).format(
-                              "dddd, MMMM D",
-                            )}
+                            {dayjs(optionDeliveryTimeMs).format("dddd, MMMM D")}
                           </div>
                           <div className="delivery-option-price">
                             {priceString}
