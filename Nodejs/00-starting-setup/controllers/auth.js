@@ -25,7 +25,7 @@ const postLogin = async (req, res, next) => {
       message: errors.array()[0].msg,
       validationError: errors.array(),
       oldInput: {
-        email: email
+        email: email,
       },
     });
   }
@@ -41,7 +41,7 @@ const postLogin = async (req, res, next) => {
       return res.status(401).json({
         message: "Invalid Email or Password",
         oldInput: {
-          email: email
+          email: email,
         },
       });
     }
@@ -64,11 +64,11 @@ const postLogin = async (req, res, next) => {
         });
       });
     } else {
-      // 3. If the password does not match 
+      // 3. If the password does not match
       return res.status(401).json({
         message: "Incorrect Email or Password",
         oldInput: {
-          email: email
+          email: email,
         },
       });
     }
@@ -102,16 +102,11 @@ const postSignUp = async (req, res, next) => {
 
   //validation
   if (!errors.isEmpty()) {
-    return res.status(422).render("../views/auth/sign-up.ejs", {
-      pageTitle: "SignUp",
-      path: "/sign-up",
-      errorMessage: errors.array()[0].msg,
+    return res.status(422).json({
+      message: errors.array()[0].msg,
       oldInput: {
         email: email,
-        password: password,
-        confirmPassword: confirmPassword,
       },
-      validationError: errors.array(), //to make the red borders
     });
   }
 
@@ -121,16 +116,23 @@ const postSignUp = async (req, res, next) => {
       email,
       hashedPassword,
     ]);
-    await transport.sendMail({
-      from: "joshua250426.work@gmail.com",
-      to: email,
-      subject: "Account Creation Success!",
-      html: "<h2>Welcome!</h2><p>Your account has been created successfully.</p><p>You can now log in using your email address.</p><p>Thank you,<br>Joshua Store</p>",
+
+    try {
+      await transport.sendMail({
+        from: "joshua250426.work@gmail.com",
+        to: email,
+        subject: "Account Creation Success!",
+        html: "<h2>Welcome!</h2><p>Your account has been created successfully.</p><p>You can now log in using your email address.</p><p>Thank you,<br>Joshua Store</p>",
+      });
+    } catch (err) {
+      console.error("Failed to send welcome email: ", err);
+    }
+
+    return res.status(201).json({
+      message: "user created successfully",
+      email: email,
     });
-    return res.redirect("/login");
-  } catch (error) {
-    const err = new Error(error);
-    err.statusCode = 500;
+  } catch (err) {
     next(err);
   }
 };

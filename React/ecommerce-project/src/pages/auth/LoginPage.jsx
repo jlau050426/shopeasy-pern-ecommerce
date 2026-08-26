@@ -29,7 +29,7 @@ export function LoginPage() {
         setErrorMessage(error.response.data.message);
         setEmail(error.response.data.oldInput.email);
       } else {
-        setErrorMessage("Something Went Wrong");
+        setErrorMessage("Unable to Connect to Server");
       }
     } finally {
       setIsLoading(false);
@@ -46,6 +46,8 @@ export function LoginPage() {
       console.log(error);
       if (error.response) {
         setErrorMessage(error.response.data.message);
+      } else {
+        setErrorMessage("Unable to Connect to Server!")
       }
     }
   }
