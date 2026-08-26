@@ -7,12 +7,14 @@ import { OrderContainer } from "./OrderContainer";
 export function OrdersPage({ cart }) {
   //state to save the orders
   const [orders, setOrders] = useState([]);
+  const [totalOrderPrice, setTotalOrderPrice] = useState(null)
 
   useEffect(() => {
     async function getOrders() {
       try {
         const response = await axios.get("/checkout/orders");
-        setOrders(response.data);
+        setOrders(response.data.orders);
+        setTotalOrderPrice(response.data.orderTotalPrice)
       } catch (error) {
         console.log(error);
       }
@@ -52,6 +54,7 @@ export function OrdersPage({ cart }) {
             return (
               <OrderContainer
                 order={order}
+                totalOrderPrice = {totalOrderPrice}
                 Fragment={Fragment}
                 handleOrderReceived={handleOrderReceived}
               ></OrderContainer>

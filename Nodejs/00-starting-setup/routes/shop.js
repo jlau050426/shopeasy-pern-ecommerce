@@ -8,7 +8,6 @@ const isAuth = require('../middleware/is-auth');
 
 //get product middlleware
 router.get('/', shopController.getIndex); //done
-router.get('/products', shopController.getProducts) //done
 router.get('/product/:productID', shopController.getProduct) //done
 router.get('/cart', isAuth, shopController.getCart) //done
 router.post('/cart', isAuth, shopController.postCart) //done

@@ -25,48 +25,6 @@ const getIndex = async (req, res, next) => {
   );
 };
 
-const getProducts = async (req, res, next) => {
-  const productsPerPage = 2;
-
-  await pagination(
-    req,
-    res,
-    productsPerPage,
-    "/products",
-    async (fetchPage, totalPages) => {
-      res.render("../views/shop/product-list.ejs", {
-        prods: fetchPage.rows,
-        pageTitle: "Products",
-        path: "/products",
-        totalPages: totalPages,
-        errorMessage: req.flash("error"),
-      });
-    },
-  );
-};
-
-// const getProduct = async (req, res, next) => {
-//   const id = req.params.productID;
-//   try {
-//     const result = await Product.findProductByID(id);
-//     if (!result.rows[0]) {
-//       return res.status(404).render("../views/404.ejs", {
-//         pageTitle: "Product Not Found",
-//         path: "",
-//       });
-//     }
-//     res.render("../views/shop/product-detail.ejs", {
-//       product: result.rows[0],
-//       pageTitle: "Product Details",
-//       path: "/products",
-//     });
-//   } catch (error) {
-//     const err = new Error(error);
-//     err.statusCode = 500;
-//     next(err);
-//   }
-// };
-
 const getProduct = async (req, res, next) => {
   const id = req.params.productID;
   try {
@@ -328,7 +286,7 @@ const stripeWebhook = async (req, res, next) => {
     );
   } catch (error) {
     console.log(`⚠️ Webhook signature verification failed.`, error.message);
-    return response.sendStatus(400);
+    return res.sendStatus(400);
   }
 
   // Handle the event
@@ -337,6 +295,9 @@ const stripeWebhook = async (req, res, next) => {
       const session = event.data.object;
       const sessionUserID = session.metadata.user_id;
       const stripeSessionID = session.id;
+
+      //borrow a connection from database for full transaction query
+      const client = await db.connect()
 
       //create order
       try {
@@ -384,12 +345,10 @@ const stripeWebhook = async (req, res, next) => {
         await client.query("ROLLBACK");
         const err = new Error(error);
         err.statusCode = 500;
-        next(err);
+        return next(err);
+      } finally {
+        client.release() //prevent connection exhaustion
       }
-
-      // Then define and call a method to handle the successful payment intent.
-      // handlePaymentIntentSucceeded(paymentIntent);
-      break;
     default:
       console.log(`Unhandled event type ${event.type}`);
   }

@@ -34,7 +34,7 @@ const postAddProduct = async (req, res, next) => {
   //if errors occurs, remove the image file that have been parsed into local
   if (!errors.isEmpty()) {
     //remove replaced image from local
-    await fileOperator.removeImage(image.path);
+    await fileOperator.removeImage(image.path, next);
     return res.status(422).render("../views/admin/add-product.ejs", {
       pageTitle: "Add Product",
       path: "/admin/add-product",
@@ -48,7 +48,7 @@ const postAddProduct = async (req, res, next) => {
     res.redirect("/admin/products");
   } catch (error) {
     if (image) {
-      await fileOperator.removeImage(image.path)
+      await fileOperator.removeImage(image.path, next)
     }
     const err = new Error(error);
     err.statusCode = 500;
@@ -93,7 +93,7 @@ const postEditProduct = async (req, res, next) => {
   //catch error
   if (!errors.isEmpty()) {
     if (image) {
-      await fileOperator.removeImage(image.path);
+      await fileOperator.removeImage(image.path, next);
     }
     return res.status(422).render("../views/admin/edit-product.ejs", {
       pageTitle: "Add Product",
@@ -112,7 +112,7 @@ const postEditProduct = async (req, res, next) => {
     const imageURL = image ? image.filename : existingImageURL;
     if (image) {
       const oldImagePath = path.join("images", existingImageURL);
-      await fileOperator.removeImage(oldImagePath);
+      await fileOperator.removeImage(oldImagePath, next);
     }
 
     const updatedProduct = new Product(title, imageURL, price, description);
@@ -136,7 +136,7 @@ const removeProduct = async (req, res, next) => {
     }
     const imageURL = path.join("images", selectedProduct.rows[0].imageurl);
     await Product.deleteProduct(productID);
-    await fileOperator.removeImage(imageURL); // remove image after database execution complete
+    await fileOperator.removeImage(imageURL, next); // remove image after database execution complete
     //dont re-render the page, use client side json fetching instead
     res.status(200).json({
       message: "success!",

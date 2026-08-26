@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 
-export function OrderContainer({ order, Fragment, handleOrderReceived }) {
+export function OrderContainer({ order, Fragment, handleOrderReceived, totalOrderPrice }) {
   const [currentTime] = useState(() => Date.now());
   return (
     <div key={order.id} class="order-container">
@@ -65,6 +65,9 @@ export function OrderContainer({ order, Fragment, handleOrderReceived }) {
             </Fragment>
           );
         })}
+      </div>
+      <div class="order-details-grid">
+        Total Order Price: {totalOrderPrice}
       </div>
     </div>
   );

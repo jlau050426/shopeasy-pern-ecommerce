@@ -55,6 +55,8 @@ const errorController = require("./controllers/error");
 //import shopController for webhook
 const shopController = require('./controllers/shop')
 
+const router = express.Router()
+
 //stripe webhook require raw request body, need to define before express.json
 router.post(
   "/stripe-webhook",
