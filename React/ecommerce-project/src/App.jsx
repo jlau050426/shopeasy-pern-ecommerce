@@ -3,14 +3,15 @@ import { ProductDetails } from "./pages/home/ProductDetails";
 import { CheckoutPage } from "./pages/checkout/CheckoutPage";
 import { OrdersPage } from "./pages/order/OrdersPage";
 import { TrackingPage } from "./pages/tracking/TrackingPage";
-import {Error404} from "./pages/error404/Error404"
+import { Error404 } from "./pages/error404/Error404";
+import { LoginPage } from "./pages/auth/LoginPage";
+import { SignupPage } from "./pages/auth/SignupPage";
 import { Routes, Route } from "react-router-dom";
 import "./App.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
 function App() {
-  
   //state lifted up
   //track cart quantity
   const [cart, setCart] = useState([]);
@@ -36,25 +37,19 @@ function App() {
         element={<HomePage cart={cart} fetchCart={fetchCart} />}
       />
       <Route
-      path="/product/:productID"
-      element={<ProductDetails cart={cart}/>}
-      />
-      <Route
-        path="*"
-        element={<Error404 cart={cart}/>}
+        path="/product/:productID"
+        element={<ProductDetails cart={cart} />}
       />
       <Route
         path="checkout"
         element={<CheckoutPage cart={cart} fetchCart={fetchCart} />}
       />
-      <Route
-      path="/checkout/orders"
-      element={<OrdersPage cart={cart} />} 
-      />
-      <Route
-      path="tracking"
-      element={<TrackingPage cart={cart}/>} 
-      />
+      <Route path="/checkout/orders" element={<OrdersPage cart={cart} />} />
+      <Route path="tracking" element={<TrackingPage cart={cart} />} />
+      <Route path="login" element={<LoginPage />} />
+      <Route path="sign-up" element={<SignupPage />} />
+
+      <Route path="*" element={<Error404 cart={cart} />} />
     </Routes>
   );
 }

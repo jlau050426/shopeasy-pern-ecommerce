@@ -13,7 +13,7 @@ export function PaymentSummary({ cart, paymentSummary, fetchCart }) {
     window.location.href = response.data.checkoutUrl
     // after order placed, remove that items from cart and redirect to order page
     await fetchCart();
-    navigate("/orders");
+    navigate("/checkout/orders");
   };
 
   if (!paymentSummary) {

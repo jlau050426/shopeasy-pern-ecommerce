@@ -146,7 +146,7 @@ export function Error404({ cart = [] }) {
               </div>
             </Link>
 
-            <Link to="/orders" className="quick-link-card">
+            <Link to="/checkout/orders" className="quick-link-card">
               <div className="quick-link-icon">📦</div>
               <div className="quick-link-info">
                 <div className="quick-link-title">Your Orders</div>

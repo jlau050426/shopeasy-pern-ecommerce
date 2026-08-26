@@ -55,10 +55,9 @@ const errorController = require("./controllers/error");
 //import shopController for webhook
 const shopController = require('./controllers/shop')
 
-const router = express.Router()
 
 //stripe webhook require raw request body, need to define before express.json
-router.post(
+app.post(
   "/stripe-webhook",
   express.raw({ type: "application/json" }),
   shopController.stripeWebhook,
@@ -127,7 +126,9 @@ app.use(errorController.error404);
 //error handling middleware
 app.use((err, req, res, next) => {
   console.log(err);
-  res.redirect("/500");
+  res.status(err.statusCode || 500).json({
+    message: "Internal Server Error" //just show internal server error everytime
+  })
 });
 
 //start the app

@@ -1,20 +1,20 @@
 import "./OrdersPage.css";
 import axios from "axios";
-import { useState, useEffect, Fragment } from "react";
+import { useState, useEffect} from "react";
 import { Header } from "../../components/Header";
 import { OrderContainer } from "./OrderContainer";
 
 export function OrdersPage({ cart }) {
   //state to save the orders
   const [orders, setOrders] = useState([]);
-  const [totalOrderPrice, setTotalOrderPrice] = useState(null)
+  const [totalOrderPrice, setTotalOrderPrice] = useState(null);
 
   useEffect(() => {
     async function getOrders() {
       try {
         const response = await axios.get("/checkout/orders");
         setOrders(response.data.orders);
-        setTotalOrderPrice(response.data.orderTotalPrice)
+        setTotalOrderPrice(response.data.orderTotalPrice);
       } catch (error) {
         console.log(error);
       }
@@ -27,7 +27,7 @@ export function OrdersPage({ cart }) {
   async function handleOrderReceived(orderId) {
     try {
       // Delete the order from the backend.
-      await axios.delete(`/api/orders/${orderId}`);
+      await axios.delete(`/orders/${orderId}`);
 
       // Create a new array that contains every order
       // except the one whose id matches orderId.
@@ -53,9 +53,9 @@ export function OrdersPage({ cart }) {
           {orders.map((order) => {
             return (
               <OrderContainer
+                key={order.id}
                 order={order}
-                totalOrderPrice = {totalOrderPrice}
-                Fragment={Fragment}
+                totalOrderPrice={totalOrderPrice}
                 handleOrderReceived={handleOrderReceived}
               ></OrderContainer>
             );

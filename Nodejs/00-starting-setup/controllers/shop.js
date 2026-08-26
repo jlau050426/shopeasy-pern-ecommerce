@@ -190,32 +190,35 @@ const getOrders = async (req, res, next) => {
 };
 
 //get checkout page
-const getCheckout = async (req, res, next) => {
-  const sessionUserID = req.session.sessionUserID;
+//useless as it is replaced by getCart
+// const getCheckout = async (req, res, next) => {
+//   const sessionUserID = req.session.sessionUserID;
 
-  try {
-    const result = await Cart.fetchAllCart(sessionUserID);
+//   try {
+//     const result = await Cart.fetchAllCart(sessionUserID);
 
-    const cart = result.rows;
+//     const cart = result.rows;
 
-    let cartTotal = 0;
+//     let cartTotal = 0;
 
-    cart.forEach((c) => {
-      cartTotal += Number(c.item_total);
-    });
+//     cart.forEach((c) => {
+//       cartTotal += Number(c.item_total);
+//     });
 
-    return res.render("../views/shop/checkout.ejs", {
-      grandTotal: cartTotal,
-      cart: cart,
-      pageTitle: "Checkout",
-      path: "/checkout",
-    });
-  } catch (error) {
-    const err = new Error(error);
-    err.statusCode = 500;
-    next(err);
-  }
-};
+//     return res.render("../views/shop/checkout.ejs", {
+//       grandTotal: cartTotal,
+//       cart: cart,
+//       pageTitle: "Checkout",
+//       path: "/checkout",
+//     });
+//   } catch (error) {
+//     const err = new Error(error);
+//     err.statusCode = 500;
+//     next(err);
+//   }
+// };
+
+
 
 //direct to Stripe API (place order)
 const postCheckout = async (req, res, next) => {
@@ -271,7 +274,6 @@ const postCheckout = async (req, res, next) => {
 
 //stripe webhook handler
 const stripeWebhook = async (req, res, next) => {
-  const client = await db.connect();
   //get current time
   const currentTime = Date.now();
   let event;
@@ -327,7 +329,7 @@ const stripeWebhook = async (req, res, next) => {
           const productID = item.product_id;
           const quantity = item.quantity;
           const price = item.price;
-          const deliveryDays = currentTime + item.delivery_days;
+          const deliveryDays = currentTime + Number(item.delivery_days) * 24 * 60 * 60 * 1000;
           await Orders.postOrderItems(
             orderID,
             productID,

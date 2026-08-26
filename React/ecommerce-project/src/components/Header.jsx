@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import './header.css'
 import { cartQuantity } from '../utils/cartQuantity';
 
-export function Header({cart = [], search, setSearch}) {
+export function Header({cart = [], search='', setSearch= () => {}}) {
 
   const totalQuantity = cartQuantity(cart)
   return (
@@ -29,7 +29,7 @@ export function Header({cart = [], search, setSearch}) {
       </div>
 
       <div className="right-section">
-        <Link className="orders-link header-link" to="/orders">
+        <Link className="orders-link header-link" to="/checkout/orders">
           <span className="orders-text">Orders</span>
         </Link>
 

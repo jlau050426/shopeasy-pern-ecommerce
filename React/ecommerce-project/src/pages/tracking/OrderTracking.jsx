@@ -8,6 +8,7 @@ export function OrderTracking() {
   const [searchParams] = useSearchParams();
   const orderID = searchParams.get("orderID");
   const productID = searchParams.get("productID");
+  const [currentTime] = useState(() => Date.now())
 
   useEffect(() => {
     if (!orderID) return;
@@ -44,7 +45,6 @@ export function OrderTracking() {
   // Calculate delivery progress percentage
   const orderTime = order.orderTimeMs;
   const estimatedDeliveryTime = trackedProduct.estimatedDeliveryTimeMs;
-  const currentTime = Date.now();
 
   const totalDuration = estimatedDeliveryTime - orderTime;
   const elapsed = currentTime - orderTime;

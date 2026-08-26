@@ -1,9 +1,9 @@
 import { formatMoney } from "../../utils/money";
 import dayjs from "dayjs";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, Fragment } from "react";
 
-export function OrderContainer({ order, Fragment, handleOrderReceived, totalOrderPrice }) {
+export function OrderContainer({ order, handleOrderReceived, totalOrderPrice }) {
   const [currentTime] = useState(() => Date.now());
   return (
     <div key={order.id} class="order-container">
