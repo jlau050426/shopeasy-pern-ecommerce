@@ -1,20 +1,53 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./login-page.css";
+import axios from "axios";
 
 export function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
+    setIsLoading(true); //once button pressed, isLoading = true
+    //axios post email and password
+    try {
+      const response = await axios.post("/login", {
+        email: email,
+        password: password,
+      });
+
+      if (response.status === 200) {
+        navigate("/");
+      }
+    } catch (error) {
+      console.log(error);
+      if (error.response) {
+        setErrorMessage(error.response.data.message);
+        setEmail(error.response.data.oldInput.email);
+      } else {
+        setErrorMessage("Something Went Wrong");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   }
 
-  function handleLogout() {
-    setEmail("");
-    setPassword("");
-    navigate("/");
+  async function handleLogout() {
+    try {
+      await axios.post("/logout");
+      setEmail("");
+      setPassword("");
+      navigate("/login");
+    } catch (error) {
+      console.log(error);
+      if (error.response) {
+        setErrorMessage(error.response.data.message);
+      }
+    }
   }
 
   return (
@@ -24,12 +57,17 @@ export function LoginPage() {
           <Link className="login-brand" to="/" aria-label="Go to homepage">
             ShopEasy
           </Link>
-          <button className="logout-button" type="button" onClick={handleLogout}>
+          <button
+            className="logout-button"
+            type="button"
+            onClick={handleLogout}
+          >
             Log out
           </button>
         </div>
 
         <div className="login-card__content">
+          <p className="login-eyebrow">{errorMessage}</p>
           <p className="login-eyebrow">WELCOME BACK</p>
           <h1 id="login-heading">Log in to your account</h1>
           <p className="login-subtitle">
@@ -64,8 +102,8 @@ export function LoginPage() {
               required
             />
 
-            <button className="login-button" type="submit">
-              Log in
+            <button className="login-button" type="submit" disabled={isLoading}>
+              {isLoading ? "Logging-in" : "Log in"}
             </button>
           </form>
 

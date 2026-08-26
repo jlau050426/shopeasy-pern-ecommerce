@@ -7,7 +7,6 @@ const authController = require('../controllers/auth');
 const { body } = require('express-validator');
 
 //log in route
-router.get('/login', authController.getLogin)
 router.post('/login',
     [
         body('email')
@@ -21,7 +20,6 @@ router.post('/login',
 router.post('/logout', authController.postLogout)
 
 //sign up route
-router.get('/sign-up', authController.getSignUp)
 router.post('/sign-up', [
     body("email")
         .isEmail()

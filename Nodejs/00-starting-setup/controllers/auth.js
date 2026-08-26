@@ -14,19 +14,6 @@ const transport = nodemailer.createTransport(
   }),
 );
 
-const getLogin = (req, res, next) => {
-  res.render("../views/auth/login.ejs", {
-    pageTitle: "Login",
-    path: "/login",
-    oldInput: {
-      email: "",
-      password: "",
-    },
-    errorMessage: req.flash("error"),
-    validationError: [],
-  });
-};
-
 const postLogin = async (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -34,15 +21,12 @@ const postLogin = async (req, res, next) => {
 
   //validation
   if (!errors.isEmpty()) {
-    return res.status(422).render("../views/auth/login.ejs", {
-      pageTitle: "Login",
-      path: "/login",
-      oldInput: {
-        email: email,
-        password: password,
-      },
-      errorMessage: errors.array()[0].msg,
+    return res.status(422).json({
+      message: errors.array()[0].msg,
       validationError: errors.array(),
+      oldInput: {
+        email: email
+      },
     });
   }
 
@@ -54,15 +38,11 @@ const postLogin = async (req, res, next) => {
       [email],
     );
     if (existingUser.rows.length === 0) {
-      return res.status(422).render("../views/auth/login.ejs", {
-        pageTitle: "Login",
-        path: "/login",
-        errorMessage: "Invalid email.",
+      return res.status(401).json({
+        message: "Invalid Email or Password",
         oldInput: {
-          email: email,
-          password: password,
+          email: email
         },
-        validationError: [{ path: "email" }],
       });
     }
     const storedHashPassword = existingUser.rows[0].password;
@@ -75,52 +55,42 @@ const postLogin = async (req, res, next) => {
       req.session.save((err) => {
         if (err) {
           console.log(err);
+          return res.status(500).json({
+            message: "Session Operation Failed! Internal Server Error",
+          });
         }
-        return res.redirect("/");
+        return res.status(200).json({
+          message: "Login Successful!",
+        });
       });
     } else {
-      // 3. If the password does not match (highlight password field)
-      return res.status(422).render("../views/auth/login.ejs", {
-        pageTitle: "Login",
-        path: "/login",
-        errorMessage: "Incorrect Password!",
+      // 3. If the password does not match 
+      return res.status(401).json({
+        message: "Incorrect Email or Password",
         oldInput: {
-          email: email,
-          password: password,
+          email: email
         },
-        validationError: [{ path: "password" }],
       });
     }
-  } catch (error) {
-    const err = new Error(error);
-    err.statusCode = 500;
+  } catch (err) {
     next(err);
   }
 };
 
 const postLogout = (req, res, next) => {
   req.session.destroy((err) => {
+    //error occured!
     if (err) {
       console.log(err);
-      req.flash("error", "Unable to log out");
-      return res.redirect("/");
+      return res.status(500).json({
+        message: "Unable to log out",
+      });
     }
+    //log out successfully
     res.clearCookie("connect.sid");
-    return res.redirect("/login");
-  });
-};
-
-const getSignUp = (req, res, next) => {
-  res.render("../views/auth/sign-up.ejs", {
-    pageTitle: "SignUp",
-    path: "/sign-up",
-    oldInput: {
-      email: "",
-      password: "",
-      confirmPassword: "",
-    },
-    errorMessage: req.flash("error"),
-    validationError: [],
+    return res.status(200).json({
+      message: "Successfully Log Out",
+    });
   });
 };
 
@@ -246,7 +216,7 @@ const getNewPasswordForm = async (req, res, next) => {
     console.log("params token: ", token);
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
     console.log("get new form hashed token: ", hashedToken);
-    
+
     const user = await db.query(
       "SELECT id FROM users WHERE reset_token_hash = $1 AND reset_token_expiry > $2",
       [hashedToken, Date.now()],
@@ -274,7 +244,7 @@ const getNewPasswordForm = async (req, res, next) => {
 
 const postNewPasswordForm = async (req, res, next) => {
   const token = req.body.token;
-  const hashedToken = crypto.createHash("sha256").update(token).digest("hex")
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
   const newPassword = req.body.password;
   const confirmPassword = req.body.confirmPassword;
   const errors = validationResult(req);
@@ -326,10 +296,8 @@ const postNewPasswordForm = async (req, res, next) => {
   }
 };
 
-exports.getLogin = getLogin;
 exports.postLogin = postLogin;
 exports.postLogout = postLogout;
-exports.getSignUp = getSignUp;
 exports.postSignUp = postSignUp;
 exports.getReset = getReset;
 exports.postReset = postReset;

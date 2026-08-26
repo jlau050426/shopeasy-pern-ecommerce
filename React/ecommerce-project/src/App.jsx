@@ -11,6 +11,8 @@ import "./App.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
+axios.defaults.withCredentials = true //set as DEFAULT to allow CORS
+
 function App() {
   //state lifted up
   //track cart quantity
