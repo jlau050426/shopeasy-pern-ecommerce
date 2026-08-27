@@ -137,36 +137,24 @@ const postSignUp = async (req, res, next) => {
   }
 };
 
-const getReset = (req, res, next) => {
-  res.render("../views/auth/reset-password.ejs", {
-    pageTitle: "Reset Password",
-    path: "/reset",
-    errorMessage: req.flash("error"),
-  });
-};
-
 const postReset = (req, res, next) => {
   const email = req.body.email;
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    return res.status(422).render("../views/auth/reset-password.ejs", {
-      pageTitle: "Reset Password",
-      path: "/reset",
-      errorMessage: errors.array()[0].msg,
+    return res.status(422).json({
+      message: errors.array()[0].msg,
     });
   }
 
   crypto.randomBytes(32, async (err, buffer) => {
     if (err) {
       console.log(err);
-      return res.redirect("/reset");
+      return next(err); //error middleware will assign 500 status code
     }
     const token = buffer.toString("hex");
-    console.log("generated token: ", token);
     // Hash the token using SHA-256
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-    console.log("generated hashed token: ", hashedToken);
 
     const expiryTokenDate = Date.now() + 3600000;
 
@@ -176,11 +164,9 @@ const postReset = (req, res, next) => {
         email,
       ]);
       if (foundUser.rows.length === 0) {
-        req.flash(
-          "error",
-          "reset link has been sent if the email address is valid",
-        );
-        return res.redirect("/reset");
+        return res.status(200).json({
+          message: "reset link has been sent if the email address is valid",
+        });
       }
       await db.query(
         `UPDATE users
@@ -198,68 +184,39 @@ const postReset = (req, res, next) => {
         to: email,
         subject: "Reset Password Request",
         html: `
-                        <p>You request a password reset</p>
-                        <p>Click this <a href="http://localhost:${process.env.PORT}/reset/${token}">link</a> to reset your password</p>
-                        `,
+              <p>You request a password reset</p>
+              <p>Click this <a href="http://localhost:${process.env.PORT}/set-new-password/${token}">link</a> to reset your password</p>
+              `,
       });
       console.log("Reset Email Sent Successfully!");
-      return res.redirect("/login");
-    } catch (error) {
-      const err = new Error(error);
-      err.statusCode = 500;
+      return res.status(200).json({
+        message: "Reset Email Sent Successfully!",
+      });
+    } catch (err) {
       next(err);
     }
   });
 };
 
-const getNewPasswordForm = async (req, res, next) => {
-  try {
-    const token = req.params.token;
-    console.log("params token: ", token);
-    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-    console.log("get new form hashed token: ", hashedToken);
-
-    const user = await db.query(
-      "SELECT id FROM users WHERE reset_token_hash = $1 AND reset_token_expiry > $2",
-      [hashedToken, Date.now()],
-    );
-
-    if (user.rows.length === 0) {
-      req.flash("error", "reset link expired!");
-      return res.redirect("/reset");
-    }
-
-    const userId = user.rows[0].id;
-    res.render("../views/auth/new-password.ejs", {
-      pageTitle: "New Password",
-      path: "/new-password",
-      errorMessage: req.flash("error"),
-      token: token,
-    });
-  } catch (error) {
-    console.log(error);
-    const err = new Error(error);
-    err.statusCode = 500;
-    next(err);
-  }
-};
-
 const postNewPasswordForm = async (req, res, next) => {
   const token = req.body.token;
   const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-  const newPassword = req.body.password;
+  const newPassword = req.body.newPassword;
   const confirmPassword = req.body.confirmPassword;
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    req.flash("error", errors.array()[0].msg);
-    return res.redirect(`/reset/${token}`);
+    return res.status(422).json({
+      message: errors.array()[0].msg
+    })
   }
 
   if (confirmPassword !== newPassword) {
-    req.flash("error", "Confirm password does not match!");
-    return res.redirect(`/reset/${token}`);
+    return res.status(422).json({
+      message: "Confirm password does not match!"
+    })
   }
+
   //insert new password into database
   try {
     // Hash the password
@@ -268,32 +225,31 @@ const postNewPasswordForm = async (req, res, next) => {
     //need to double verify the validity
     const user = await db.query(
       `
-            SELECT id FROM users 
-            WHERE reset_token_hash = $1 
+            SELECT id FROM users
+            WHERE reset_token_hash = $1
             AND reset_token_expiry > $2`,
       [hashedToken, Date.now()],
     );
 
     if (user.rows.length === 0) {
-      req.flash("error", "Invalid / expired reset link");
-      return res.redirect("/reset");
+      return res.status(400).json({
+        message: "Invalid / expired reset link"
+      })
     }
 
     const userID = user.rows[0].id;
     await db.query(
       `
-            UPDATE users 
-            SET password = $1, 
-            reset_token_hash = NULL, 
-            reset_token_expiry = NULL 
+            UPDATE users
+            SET password = $1,
+            reset_token_hash = NULL,
+            reset_token_expiry = NULL
             WHERE id = $2
             `,
       [hashedPassword, userID],
     );
-    return res.redirect("/login");
-  } catch (error) {
-    const err = new Error(error);
-    err.statusCode = 500;
+    return res.status(201)
+  } catch (err) {
     next(err);
   }
 };
@@ -301,7 +257,5 @@ const postNewPasswordForm = async (req, res, next) => {
 exports.postLogin = postLogin;
 exports.postLogout = postLogout;
 exports.postSignUp = postSignUp;
-exports.getReset = getReset;
 exports.postReset = postReset;
-exports.getNewPasswordForm = getNewPasswordForm;
 exports.postNewPasswordForm = postNewPasswordForm;

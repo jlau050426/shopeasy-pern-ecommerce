@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       //server proxy config (when the address start with /api, automatically go to localhost 3000)
-      '/api': {
+      '/': {
         target: 'http://localhost:3000'
       },
     }

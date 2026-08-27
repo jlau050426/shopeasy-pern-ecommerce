@@ -91,7 +91,7 @@ export function LoginPage() {
 
             <div className="password-label-row">
               <label htmlFor="password">Password</label>
-              <a href="#forgot-password">Forgot password?</a>
+              <Link to="/reset-password">Forgot password?</Link>
             </div>
             <input
               id="password"
