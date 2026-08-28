@@ -9,7 +9,6 @@ import { SignupPage } from "./pages/auth/SignupPage";
 import { PasswordResetPage } from "./pages/auth/passwordResetPage";
 import { NewPasswordPage } from "./pages/auth/newPasswordPage";
 import { Routes, Route, useNavigate } from "react-router-dom";
-import "./App.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
