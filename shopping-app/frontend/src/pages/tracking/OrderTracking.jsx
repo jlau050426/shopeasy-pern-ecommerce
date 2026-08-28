@@ -1,43 +1,47 @@
 import { Link, useSearchParams } from "react-router-dom";
-import axios from "axios";
+import apiClient from "../../services/apiClient";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 
 export function OrderTracking() {
-  const [order, setOrder] = useState([]);
-  const [trackedProduct, setTrackedProduct] = useState([]);
+  const [order, setOrder] = useState(null);
+  const [trackedProduct, setTrackedProduct] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [currentTime] = useState(() => Date.now());
   const [searchParams] = useSearchParams();
+
   const orderID = searchParams.get("orderID");
   const productID = searchParams.get("productID");
 
   useEffect(() => {
-    if (!orderID) {
-      setIsLoading(false);
+    if (!orderID || !productID) {
       return;
     }
     async function fetchOrder() {
       try {
-        const response = await axios.get(`/checkout/orders/${orderID}`);
-        
-        setOrder(response.data);
+        const response = await apiClient.get(`/checkout/orders/${orderID}`);
+
+        setOrder(response.data.order);
 
         //find product
         // Find the exact product from the order
-        const product = response.data.find((item) => String(item.product_id) === String(productID));
+        const product = response.data.order.find(
+          (item) => String(item.product_id) === String(productID),
+        );
         if (!product) {
-          setErrorMessage("Product Not Foind in this order")
-          return
+          setErrorMessage("Product Not Found in this order");
+          return;
         }
-        setTrackedProduct(product)
+        setTrackedProduct(product);
       } catch (error) {
         console.error("Error fetching data ", error);
         if (error.response) {
-          setErrorMessage(error.response.data.message || "failed to fetch order");
+          setErrorMessage(
+            error.response.data.message || "failed to fetch order",
+          );
         } else {
-          setErrorMessage("Unable to connect to server")
+          setErrorMessage("Unable to connect to server");
         }
       } finally {
         setIsLoading(false);
@@ -51,7 +55,24 @@ export function OrderTracking() {
     return (
       <div className="order-tracking">
         <p className="error-message">Retrieving Information.......</p>
-        <Link className="back-to-orders-link link-primary" to="/orders">
+        <Link
+          className="back-to-orders-link link-primary"
+          to="/checkout/orders"
+        >
+          Back to orders
+        </Link>
+      </div>
+    );
+  }
+
+  if (!trackedProduct) {
+    return (
+      <div className="order-tracking">
+        <p className="error-message">Product Not Found</p>
+        <Link
+          className="back-to-orders-link link-primary"
+          to="/checkout/orders"
+        >
           Back to orders
         </Link>
       </div>
@@ -81,7 +102,7 @@ export function OrderTracking() {
 
   return (
     <div className="order-tracking">
-      <Link className="back-to-orders-link link-primary" to="/orders">
+      <Link className="back-to-orders-link link-primary" to="/checkout/orders">
         View all orders
       </Link>
 

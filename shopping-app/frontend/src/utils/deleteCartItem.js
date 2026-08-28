@@ -1,6 +1,6 @@
-import axios from "axios";
+import apiClient from "../services/apiClient";
 
 export async function deleteCartItem(cartItem, fetchCart){
-        await axios.delete(`/cart-delete-item/${cartItem.id}`)
+        await apiClient.delete(`/cart-delete-item/${cartItem.id}`)
         await fetchCart();
 }

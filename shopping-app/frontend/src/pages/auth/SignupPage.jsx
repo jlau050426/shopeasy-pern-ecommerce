@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./sign-up.css";
-import axios from "axios";
+import apiClient from "../../services/apiClient";
 
 export function SignupPage() {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ export function SignupPage() {
     event.preventDefault();
     setIsLoading(true);
     try {
-      const response = await axios.post("/sign-up", {
+      const response = await apiClient.post("/sign-up", {
         email: email,
         password: password,
         confirmPassword: confirmPassword
@@ -26,8 +26,10 @@ export function SignupPage() {
       }
     } catch (error) {
       if (error.response) {
-        setErrorMessage(error.response.data.message)
-        setEmail(error.response.data.oldInput.email)
+        setErrorMessage(error.response.data?.message || "An error occured")
+        if (error.response.data?.oldInput?.email) {
+          setEmail(error.response.data.oldInput.email)
+        }
         setPassword('')
         setConfirmPassword('')
       }else{

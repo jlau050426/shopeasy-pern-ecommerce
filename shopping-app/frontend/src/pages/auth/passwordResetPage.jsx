@@ -1,24 +1,30 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import "./password-reset.css";
-import axios from "axios";
+import apiClient from "../../services/apiClient";
 
 export function PasswordResetPage() {
   const [email, setEmail] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [emailValidationStatusMessage, setEmailValidationStatusMessage] = useState("")
+  const [emailSentMessage, setEmailSentMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(event) {
     event.preventDefault();
     try {
       setIsLoading(true);
-      await axios.post("/reset", {
+      const response = await apiClient.post("/reset", {
         email: email,
       });
 
+      if (response.data.status === 200) {
+        setEmailValidationStatusMessage(response.data.emailVerifyMessage)
+        setEmailSentMessage(response.data.emailSendingMessage)
+      }
     } catch (error) {
       if (error.response) {
-        setErrorMessage(error.response.data.message);
+        setErrorMessage(error.response.data?.message || "An error occured");
         setEmail("");
       } else {
         setErrorMessage("Unable to connect to the server.");
@@ -46,6 +52,9 @@ export function PasswordResetPage() {
             Log in
           </Link>
         </div>
+
+        <h1 id="password-reset-heading">{emailValidationStatusMessage}</h1>
+        <h1 id="password-reset-heading">{emailSentMessage}</h1>
 
         <div className="password-reset-card__content">
           <p className="password-reset-eyebrow">ACCOUNT RECOVERY</p>

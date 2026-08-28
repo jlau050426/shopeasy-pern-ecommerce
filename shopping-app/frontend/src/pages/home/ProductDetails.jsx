@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+import apiClient from "../../services/apiClient";
 import { Header } from "../../components/Header";
 import { formatMoney } from "../../utils/money";
 
@@ -17,7 +17,7 @@ export function ProductDetails({ cart }) {
     async function fetchProductDetail() {
       try {
         setLoading(true);
-        const response = await axios.get(`/product/${productID}`);
+        const response = await apiClient.get(`/product/${productID}`);
         // Support both { product: {...} } and direct product object response
         setProduct(response.data.product || response.data);
       } catch (err) {

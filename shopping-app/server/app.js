@@ -7,6 +7,7 @@ const session = require("express-session");
 const crypto = require("crypto");
 const flash = require("connect-flash");
 const multer = require("multer"); //image uploads
+const cors = require("cors");
 
 //multer file storage
 const storage = multer.diskStorage({
@@ -41,6 +42,16 @@ const app = express();
 //initialise port
 const PORT = process.env.PORT;
 
+//CORS header
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "csrf-token"],
+  }),
+);
+
 app.set("view engine", "ejs");
 app.set("views", "views");
 
@@ -53,8 +64,7 @@ const authRoutes = require("./routes/auth");
 const errorController = require("./controllers/error");
 
 //import shopController for webhook
-const shopController = require('./controllers/shop')
-
+const shopController = require("./controllers/shop");
 
 //stripe webhook require raw request body, need to define before express.json
 app.post(
@@ -127,8 +137,8 @@ app.use(errorController.error404);
 app.use((err, req, res, next) => {
   console.log(err);
   res.status(err.statusCode || 500).json({
-    message: "Internal Server Error" //just show internal server error everytime
-  })
+    message: "Internal Server Error", //just show internal server error everytime
+  });
 });
 
 //start the app

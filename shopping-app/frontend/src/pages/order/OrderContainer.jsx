@@ -3,71 +3,69 @@ import dayjs from "dayjs";
 import { Link } from "react-router-dom";
 import { useState, Fragment } from "react";
 
-export function OrderContainer({ order, handleOrderReceived, totalOrderPrice }) {
+export function OrderContainer({ order, handleOrderReceived }) {
+  const API_URL = import.meta.env.VITE_API_URL
   const [currentTime] = useState(() => Date.now());
   return (
-    <div key={order.id} class="order-container">
-      <div class="order-header">
-        <div class="order-header-left-section">
-          <div class="order-date">
-            <div class="order-header-label">Order Placed:</div>
+    <div key={order.id} className="order-container">
+      <div className="order-header">
+        <div className="order-header-left-section">
+          <div className="order-date">
+            <div className="order-header-label">Order Placed:</div>
             <div>{dayjs(order.created_at).format("dddd, MMMM D")}</div>
           </div>
-          <div class="order-total">
-            <div class="order-header-label">Total:</div>
+          <div className="order-total">
+            <div className="order-header-label">Total:</div>
             <div>{formatMoney(order.single_order_total_price)}</div>
           </div>
         </div>
 
-        <div class="order-header-right-section">
-          <div class="order-header-label">Order ID:</div>
+        <div className="order-header-right-section">
+          <div className="order-header-label">Order ID:</div>
           <div>{order.id}</div>
         </div>
 
         <button
-          class="buy-again-button button-secondary"
+          className="buy-again-button button-secondary"
           onClick={() => handleOrderReceived(order.id)}
         >
-          <img class="buy-again-icon" src="/images/icons/check.png" />
-          <span class="buy-again-message">Order Received</span>
+          <img className="buy-again-icon" src="/images/icons/check.png" />
+          <span className="buy-again-message">Order Received</span>
         </button>
       </div>
 
-      <div class="order-details-grid">
+      <div className="order-details-grid">
         {/* iterate through every items in an order  */}
         {order.items.map((item) => {
           const estimatedDeliveryTimeMs = currentTime + item.estimated_delivery_days * 24 * 60 * 60 * 1000;
           return (
             <Fragment key={item.product_id}>
-              <div class="product-image-container">
+              <div className="product-image-container">
                 <img src={item.imageurl} />
               </div>
 
-              <div class="product-details">
-                <div class="product-name">{item.title}</div>
-                <div class="product-delivery-date">
+              <div className="product-details">
+                <div className="product-name">{item.title}</div>
+                <div className="product-delivery-date">
                   Arriving on:{" "}
                   {dayjs(estimatedDeliveryTimeMs).format(
                     "dddd, MMMM D",
                   )}
                 </div>
-                <div class="product-quantity">Quantity: {item.quantity}</div>
+                <div className="product-quantity">Quantity: {item.quantity}</div>
               </div>
 
-              <div class="product-actions">
+              <div className="product-actions">
                 <Link to={`/tracking?orderID=${order.id}&productID=${item.product_id}`}>
-                  <button class="track-package-button button-primary">
+                  <button className="track-package-button button-primary">
                     Track package
                   </button>
                 </Link>
-                <a href={`/order/${order.id}`}>INVOICE</a>
+                <a href={`${API_URL}/order/${order.id}`}>INVOICE</a>
               </div>
             </Fragment>
           );
         })}
-      </div>
-      <div class="order-details-grid">
-        Total Order Price: {totalOrderPrice}
       </div>
     </div>
   );

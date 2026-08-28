@@ -27,7 +27,7 @@ class Cart {
                 products.description,
                 products.imageurl,
                 (cart.quantity * products.price) AS item_total,
-                delivery_options.price_cents,
+                delivery_options.price_dollars,
                 delivery_options.delivery_days
                 FROM cart
                 INNER JOIN products

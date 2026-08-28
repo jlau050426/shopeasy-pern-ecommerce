@@ -165,7 +165,7 @@ const postReset = (req, res, next) => {
       ]);
       if (foundUser.rows.length === 0) {
         return res.status(200).json({
-          message: "reset link has been sent if the email address is valid",
+          emailVerifyMessage: "reset link has been sent if the email address is valid",
         });
       }
       await db.query(
@@ -185,12 +185,11 @@ const postReset = (req, res, next) => {
         subject: "Reset Password Request",
         html: `
               <p>You request a password reset</p>
-              <p>Click this <a href="http://localhost:${process.env.PORT}/set-new-password/${token}">link</a> to reset your password</p>
+              <p>Click this <a href="http://localhost:5173/set-new-password/${token}">link</a> to reset your password</p>
               `,
       });
-      console.log("Reset Email Sent Successfully!");
       return res.status(200).json({
-        message: "Reset Email Sent Successfully!",
+        emailSendingMessage: "Reset Email Sent Successfully!",
       });
     } catch (err) {
       next(err);

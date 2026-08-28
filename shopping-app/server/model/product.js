@@ -91,7 +91,7 @@ class Product {
     static fetchDeliveryOptionsDetails(){
         return db.query(
             `
-            SELECT id, delivery_days, price_cents
+            SELECT id, delivery_days, price_dollars
             FROM delivery_options
             `
         )

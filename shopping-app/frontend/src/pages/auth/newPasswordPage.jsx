@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import "./new-password.css";
-import axios from "axios";
+import apiClient from "../../services/apiClient";
 
 export function NewPasswordPage() {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ export function NewPasswordPage() {
     setIsLoading(true);
     event.preventDefault();
     try {
-      await axios.post("/new-password", {
+      await apiClient.post("/new-password", {
         token: token,
         newPassword: newPassword,
         confirmPassword: confirmPassword,
@@ -23,7 +23,7 @@ export function NewPasswordPage() {
       navigate("/login");
     } catch (error) {
       if (error.response) {
-        setErrorMessage(error.response.data.message);
+        setErrorMessage(error.response.data?.message || "An error occured");
         setNewPassword("");
         setConfirmPassword("");
       } else {

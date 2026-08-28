@@ -8,24 +8,22 @@ import { LoginPage } from "./pages/auth/LoginPage";
 import { SignupPage } from "./pages/auth/SignupPage";
 import { PasswordResetPage } from "./pages/auth/passwordResetPage";
 import { NewPasswordPage } from "./pages/auth/newPasswordPage";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axios from "axios";
-
-axios.defaults.withCredentials = true; //set as DEFAULT to allow CORS
+import apiClient from "./services/apiClient";
 
 function App() {
-  const navigate = useNavigate()
   //state lifted up
   //track cart quantity
   const [cart, setCart] = useState([]);
   async function fetchCart() {
     try {
-      const response = await axios.get("/cart");
-      setCart(response.data.cart);
+      const response = await apiClient.get("/cart");
+      setCart(response.data.cart || []);
     } catch (error) {
       if (error.response?.status === 401) {
-        navigate("/login");
+        setCart([])
+        return
       }
       console.log(error);
     }

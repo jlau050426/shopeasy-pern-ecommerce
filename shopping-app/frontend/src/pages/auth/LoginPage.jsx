@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./login-page.css";
-import axios from "axios";
+import apiClient from "../../services/apiClient";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ export function LoginPage() {
     setIsLoading(true); //once button pressed, isLoading = true
     //axios post email and password
     try {
-      const response = await axios.post("/login", {
+      const response = await apiClient.post("/login", {
         email: email,
         password: password,
       });
@@ -26,8 +26,10 @@ export function LoginPage() {
     } catch (error) {
       console.log(error);
       if (error.response) {
-        setErrorMessage(error.response.data.message);
-        setEmail(error.response.data.oldInput.email);
+        setErrorMessage(error.response.data?.message || "An error occured");
+        if (error.response.data?.oldInput?.email) {
+          setEmail(error.response.data.oldInput.email); 
+        }
       } else {
         setErrorMessage("Unable to Connect to Server");
       }
@@ -38,14 +40,14 @@ export function LoginPage() {
 
   async function handleLogout() {
     try {
-      await axios.post("/logout");
+      await apiClient.post("/logout");
       setEmail("");
       setPassword("");
       navigate("/login");
     } catch (error) {
       console.log(error);
       if (error.response) {
-        setErrorMessage(error.response.data.message);
+        setErrorMessage(error.response.data?.message || "An error occured");
       } else {
         setErrorMessage("Unable to Connect to Server!")
       }

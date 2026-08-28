@@ -1,5 +1,5 @@
 import "./OrdersPage.css";
-import axios from "axios";
+import apiClient from "../../services/apiClient";
 import { useState, useEffect } from "react";
 import { Header } from "../../components/Header";
 import { OrderContainer } from "./OrderContainer";
@@ -14,7 +14,7 @@ export function OrdersPage({ cart }) {
   useEffect(() => {
     async function getOrders() {
       try {
-        const response = await axios.get("/checkout/orders");
+        const response = await apiClient.get("/checkout/orders");
         setOrders(response.data.orders);
         setTotalOrderPrice(response.data.orderTotalPrice);
       } catch (error) {
@@ -32,7 +32,7 @@ export function OrdersPage({ cart }) {
   async function handleOrderReceived(orderId) {
     try {
       // Delete the order from the backend.
-      await axios.delete(`/orders/${orderId}`);
+      await apiClient.delete(`/orders/${orderId}`);
 
       // Create a new array that contains every order
       // except the one whose id matches orderId.
@@ -54,9 +54,9 @@ export function OrdersPage({ cart }) {
     <>
       <title>Orders</title>
       <Header cart={cart}></Header>
-      <div class="orders-page">
-        <div class="page-title">Your Orders</div>
-        <div class="orders-grid">
+      <div className="orders-page">
+        <div className="page-title">Your Orders</div>
+        <div className="orders-grid">
           {/* loop through all the orders  */}
           {orders.map((order) => {
             return (
@@ -69,6 +69,7 @@ export function OrdersPage({ cart }) {
             );
           })}
         </div>
+        <div>Total Order Price: {totalOrderPrice}</div>
       </div>
     </>
   );

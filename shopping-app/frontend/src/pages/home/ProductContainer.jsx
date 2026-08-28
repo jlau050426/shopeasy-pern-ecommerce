@@ -1,6 +1,6 @@
 import { formatMoney } from "../../utils/money";
 import { useState } from "react";
-import axios from "axios";
+import apiClient from "../../services/apiClient";
 import { useNavigate } from "react-router-dom";
 
 export function ProductContainer({ product, fetchCart }) {
@@ -17,7 +17,7 @@ export function ProductContainer({ product, fetchCart }) {
   async function AddToCart() {
     //make request from backend
     try {
-      await axios.post("/cart", {
+      await apiClient.post("/cart", {
         productId: product.id,
         quantity: productQuantity,
       });
@@ -47,7 +47,7 @@ export function ProductContainer({ product, fetchCart }) {
         <img
           className="product-rating-stars"
           data-testid="rating-star"
-          src={`images/ratings/rating-${product.rating_star * 10}.png`}
+          src={`/images/ratings/rating-${product.rating_star * 10}.png`}
         />
         <div className="product-rating-count link-primary">
           {product.rating_count}

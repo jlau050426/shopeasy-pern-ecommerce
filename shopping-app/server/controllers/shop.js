@@ -56,9 +56,7 @@ const postCart = async (req, res, next) => {
     return res.status(200).json({
       message: "Product Added Successfully",
     });
-  } catch (error) {
-    const err = new Error(error);
-    err.statusCode = 500;
+  } catch (err) {
     next(err);
   }
 };
@@ -77,7 +75,7 @@ const getCart = async (req, res, next) => {
     });
 
     cart.forEach((c) => {
-      shippingCostTotal += Number(c.price_cents);
+      shippingCostTotal += Number(c.price_dollars);
     });
 
     res.status(200).json({
@@ -85,9 +83,7 @@ const getCart = async (req, res, next) => {
       grandTotal: cartTotal,
       shippingCostTotal: shippingCostTotal,
     });
-  } catch (error) {
-    const err = new Error(error);
-    err.statusCode = 500;
+  } catch (err) {
     next(err);
   }
 };
@@ -99,7 +95,7 @@ const getAvailableDeliveryOptionsDetails = async (req, res, next) => {
       message: "Successfully fetch delivery options details",
       deliveryOptionsDetails: result.rows,
     });
-  } catch (error) {
+  } catch (err) {
     next(err);
   }
 };
@@ -112,9 +108,7 @@ const updateCartDeliveryOption = async (req, res, next) => {
   try {
     await Cart.updateCartDeliveryOptions(deliveryOptionId, cartId, userId);
     res.status(204).send();
-  } catch (error) {
-    const err = new Error("Internal Server Error!");
-    err.statusCode = 500;
+  } catch (err) {
     next(err);
   }
 };
@@ -125,9 +119,7 @@ const removeCart = async (req, res, next) => {
   try {
     await Cart.deleteCart(currentCartID, userID);
     res.status(204).send();
-  } catch (error) {
-    const err = new Error(error);
-    err.statusCode = 500;
+  } catch (err) {
     next(err);
   }
 };
@@ -178,9 +170,7 @@ const getOrders = async (req, res, next) => {
       orders: Object.values(groupedOrders),
       orderTotalPrice: orderTotalPrice,
     });
-  } catch (error) {
-    const err = new Error(error);
-    err.statusCode = 500;
+  } catch (err) {
     next(err);
   }
 };
@@ -189,12 +179,13 @@ const getOrder = async (req, res, next) => {
   const id = req.params.orderID;
   const sessionUserID = req.session.sessionUserID
   try {
-    const result = await Orders.fetchOrdersByID(id, sessionUserID)
-    if (!result.rows[0]) {
+    const result = await Orders.fetchOrdersByID(sessionUserID, id)
+    console.log(result.rows);
+    if (!result.rows || result.rows.length === 0) {
       return res.status(404).json({ message: "Order Not Found!" });
     }
     res.status(200).json({
-      order: result.rows[0],
+      order: result.rows,
     });
   } catch (err) {
     next(err);
@@ -239,16 +230,14 @@ const postCheckout = async (req, res, next) => {
         user_id: sessionUserID.toString(),
       },
 
-      success_url: `${req.protocol}://${req.get("host")}/checkout/orders`,
+      success_url: `http://localhost:5173/checkout/orders`,
 
-      cancel_url: `${req.protocol}://${req.get("host")}/checkout`,
+      cancel_url: `http://localhost:5173/checkout`,
     });
     res.status(201).json({
       checkoutUrl: session.url,
     });
-  } catch (error) {
-    const err = new Error(error);
-    err.statusCode = 500;
+  } catch (err) {
     next(err);
   }
 };
@@ -326,10 +315,8 @@ const stripeWebhook = async (req, res, next) => {
         await Cart.deleteOrderedCart(sessionUserID);
         await client.query("COMMIT");
         return res.sendStatus(200);
-      } catch (error) {
+      } catch (err) {
         await client.query("ROLLBACK");
-        const err = new Error(error);
-        err.statusCode = 500;
         return next(err);
       } finally {
         client.release(); //prevent connection exhaustion
@@ -349,9 +336,7 @@ const removeOrder = async (req, res, next) => {
     await Orders.deleteOrderItems(sessionUserID, orderId);
     await Orders.deleteOrder(sessionUserID, orderId);
     res.status(204).send();
-  } catch (error) {
-    const err = new Error("Order Removal Failed!");
-    err.statusCode = 500;
+  } catch (err) {
     next(err);
   }
 };
@@ -535,9 +520,7 @@ const getInvoice = async (req, res, next) => {
       err.statusCode = 500;
       next(err);
     });
-  } catch (error) {
-    const err = new Error(error);
-    err.statusCode = 500;
+  } catch (err) {
     next(err);
   }
 };

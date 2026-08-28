@@ -1,6 +1,6 @@
 import "./HomePage.css";
 import { Header } from "../../components/Header";
-import axios from "axios";
+import apiClient from "../../services/apiClient";
 import { useEffect, useState } from "react";
 import { ProductContainer } from "./ProductContainer";
 
@@ -12,7 +12,7 @@ export function HomePage({ cart, fetchCart }) {
     async function fetchProduct() {
       //assynchronous code to fetch data (promise)
       try {
-        const response = await axios.get("/");
+        const response = await apiClient.get("/");
         setProducts(response.data.prods);
       } catch (error) {
         console.log(error)

@@ -1,12 +1,12 @@
 import dayjs from "dayjs";
 import { useState } from "react";
 import { formatMoney } from "../../utils/money";
-import axios from "axios";
+import apiClient from "../../services/apiClient";
 import { deleteCartItem } from "../../utils/deleteCartItem";
 import { useNavigate } from "react-router-dom";
 
 export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [currentTime] = useState(() => Date.now());
   return (
     <div className="order-summary">
@@ -62,7 +62,7 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
                     //update delivery option function
                     async function UpdateDeliveryOption() {
                       try {
-                        await axios.put(`/cart-items/${cartItem.id}`, {
+                        await apiClient.put(`/cart-items/${cartItem.id}`, {
                           deliveryOptionId: deliveryOption.id,
                         });
                         await fetchCart();

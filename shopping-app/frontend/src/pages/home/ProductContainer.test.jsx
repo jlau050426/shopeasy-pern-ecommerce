@@ -4,7 +4,7 @@ import { it, expect, describe, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { ProductContainer } from "./ProductContainer";
 import userEvent from "@testing-library/user-event";
-import axios from "axios";
+import apiClient from "../../services/apiClient";
 
 //mock axios
 vi.mock("axios");
@@ -51,7 +51,7 @@ describe("Product detailed component", () => {
     );
     expect(screen.getByTestId("rating-star")).toHaveAttribute(
       "src",
-      "images/ratings/rating-45.png",
+      "/images/ratings/rating-45.png",
     );
     expect(screen.getByText("87")).toBeInTheDocument;
   });
@@ -84,7 +84,7 @@ describe("Product detailed component", () => {
     const user = userEvent.setup();
     const addToCartButton = screen.getByTestId("add-to-cart-button");
     await user.click(addToCartButton);
-    expect(axios.post).toHaveBeenCalledWith(
+    expect(apiClient.post).toHaveBeenCalledWith(
       "http://localhost:3000/api/cart-items",
       {
         productId: "e43638ce-6aa0-4b85-b27f-e1d07eb678c6",

@@ -1,5 +1,5 @@
 import { formatMoney } from "../../utils/money";
-import axios from "axios";
+import apiClient from "../../services/apiClient";
 import { useNavigate } from "react-router-dom";
 import { cartQuantity } from "../../utils/cartQuantity";
 
@@ -8,7 +8,7 @@ export function PaymentSummary({ cart, paymentSummary, fetchCart }) {
 
   const CreateOrder = async () => {
     try {
-      const response = await axios.post("/checkout");
+      const response = await apiClient.post("/checkout");
 
       //ejs render page to Stripe page, however React will locate windows to Stripe Page
       window.location.href = response.data.checkoutUrl;
