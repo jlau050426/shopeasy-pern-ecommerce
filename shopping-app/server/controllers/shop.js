@@ -186,7 +186,7 @@ const getOrderAndProduct = async (req, res, next) => {
       .status(400)
       .json({ message: "orderID and productID are required" });
   }
-  
+
   try {
     const result = await Orders.fetchOrderAndProductByID(
       sessionUserID,

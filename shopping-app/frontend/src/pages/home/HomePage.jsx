@@ -43,6 +43,7 @@ export function HomePage({ cart, fetchCart }) {
             );
           })}
         </div>
+        
       </div>
     </>
   );
