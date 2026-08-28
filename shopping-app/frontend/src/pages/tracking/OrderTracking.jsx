@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 
 export function OrderTracking() {
-  const [order, setOrder] = useState(null);
-  const [trackedProduct, setTrackedProduct] = useState(null);
+  const [orderAndProduct, setOrderAndProduct] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [currentTime] = useState(() => Date.now());
@@ -18,22 +17,11 @@ export function OrderTracking() {
     if (!orderID || !productID) {
       return;
     }
-    async function fetchOrder() {
+    async function fetchOrderAndProduct() {
       try {
-        const response = await apiClient.get(`/checkout/orders/${orderID}`);
+        const response = await apiClient.get(`/checkout/order-&-product?orderID=${orderID}&productID=${productID}`);
 
-        setOrder(response.data.order);
-
-        //find product
-        // Find the exact product from the order
-        const product = response.data.order.find(
-          (item) => String(item.product_id) === String(productID),
-        );
-        if (!product) {
-          setErrorMessage("Product Not Found in this order");
-          return;
-        }
-        setTrackedProduct(product);
+        setOrderAndProduct(response.data.order);
       } catch (error) {
         console.error("Error fetching data ", error);
         if (error.response) {
@@ -48,7 +36,7 @@ export function OrderTracking() {
       }
     }
 
-    fetchOrder();
+    fetchOrderAndProduct();
   }, [orderID, productID]);
 
   if (isLoading) {
@@ -65,7 +53,7 @@ export function OrderTracking() {
     );
   }
 
-  if (!trackedProduct) {
+  if (!orderAndProduct) {
     return (
       <div className="order-tracking">
         <p className="error-message">Product Not Found</p>
@@ -80,8 +68,8 @@ export function OrderTracking() {
   }
 
   // Calculate delivery progress percentage
-  const orderCreatedAtMs = new Date(order.created_at).getTime();
-  const dateReceiveMs = trackedProduct.date_receive_ms;
+  const orderCreatedAtMs = new Date(orderAndProduct.created_at).getTime();
+  const dateReceiveMs = orderAndProduct.date_receive_ms;
 
   const totalDuration = dateReceiveMs - orderCreatedAtMs;
   const elapsed = currentTime - orderCreatedAtMs;
@@ -112,11 +100,11 @@ export function OrderTracking() {
         Arriving on {dayjs(dateReceiveMs).format("dddd, MMMM D")}
       </div>
 
-      <div className="product-info">{trackedProduct.title}</div>
+      <div className="product-info">{orderAndProduct.title}</div>
 
-      <div className="product-info">Quantity: {trackedProduct.quantity}</div>
+      <div className="product-info">Quantity: {orderAndProduct.quantity}</div>
 
-      <img className="product-image" src={trackedProduct.imageurl} />
+      <img className="product-image" src={orderAndProduct.imageurl} />
 
       <div className="progress-labels-container">
         <div

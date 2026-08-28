@@ -78,8 +78,8 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
                     let priceString = "FREE Shipping"; //default of free shipping
 
                     //override if price is not FREE
-                    if (deliveryOption.price_cents > 0) {
-                      priceString = `${formatMoney(deliveryOption.price_cents)} - Shipping`;
+                    if (deliveryOption.price_dollars > 0) {
+                      priceString = `${formatMoney(deliveryOption.price_dollars)} - Shipping`;
                     }
 
                     const optionDeliveryTimeMs =

@@ -6,8 +6,7 @@ import apiClient from "../../services/apiClient";
 export function PasswordResetPage() {
   const [email, setEmail] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [emailValidationStatusMessage, setEmailValidationStatusMessage] = useState("")
-  const [emailSentMessage, setEmailSentMessage] = useState("")
+  const [emailMessage, setEmailMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(event) {
@@ -18,9 +17,8 @@ export function PasswordResetPage() {
         email: email,
       });
 
-      if (response.data.status === 200) {
-        setEmailValidationStatusMessage(response.data.emailVerifyMessage)
-        setEmailSentMessage(response.data.emailSendingMessage)
+      if (response.status === 200) {
+        setEmailMessage(response.data.message)
       }
     } catch (error) {
       if (error.response) {
@@ -53,8 +51,7 @@ export function PasswordResetPage() {
           </Link>
         </div>
 
-        <h1 id="password-reset-heading">{emailValidationStatusMessage}</h1>
-        <h1 id="password-reset-heading">{emailSentMessage}</h1>
+        {emailMessage && <p className="form-success" style={{ color: "green", marginBottom: "15px" }}>{emailMessage}</p>}
 
         <div className="password-reset-card__content">
           <p className="password-reset-eyebrow">ACCOUNT RECOVERY</p>

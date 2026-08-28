@@ -49,7 +49,7 @@ function App() {
         path="checkout"
         element={<CheckoutPage cart={cart} fetchCart={fetchCart} />}
       />
-      <Route path="/checkout/orders" element={<OrdersPage cart={cart} />} />
+      <Route path="/checkout/orders" element={<OrdersPage cart={cart} fetchCart={fetchCart} />} />
       <Route path="tracking" element={<TrackingPage cart={cart} />} />
       <Route path="login" element={<LoginPage />} />
       <Route path="sign-up" element={<SignupPage />} />

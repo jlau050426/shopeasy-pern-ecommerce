@@ -5,7 +5,7 @@ import { Header } from "../../components/Header";
 import { OrderContainer } from "./OrderContainer";
 import { useNavigate } from "react-router-dom";
 
-export function OrdersPage({ cart }) {
+export function OrdersPage({ cart, fetchCart }) {
   const navigate = useNavigate();
   //state to save the orders
   const [orders, setOrders] = useState([]);
@@ -24,9 +24,9 @@ export function OrdersPage({ cart }) {
         console.log(error);
       }
     }
-
+    fetchCart?.()
     getOrders();
-  }, []);
+  }, [navigate, fetchCart]);
 
   // delete order function (order reveived)
   async function handleOrderReceived(orderId) {

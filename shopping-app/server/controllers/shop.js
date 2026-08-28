@@ -175,17 +175,29 @@ const getOrders = async (req, res, next) => {
   }
 };
 
-const getOrder = async (req, res, next) => {
-  const id = req.params.orderID;
-  const sessionUserID = req.session.sessionUserID
+//for tracking product, track order and product id
+const getOrderAndProduct = async (req, res, next) => {
+  const orderID = req.query.orderID;
+  const productID = req.query.productID;
+  const sessionUserID = req.session.sessionUserID;
+
+  if (!orderID || !productID) {
+    return res
+      .status(400)
+      .json({ message: "orderID and productID are required" });
+  }
+  
   try {
-    const result = await Orders.fetchOrdersByID(sessionUserID, id)
-    console.log(result.rows);
+    const result = await Orders.fetchOrderAndProductByID(
+      sessionUserID,
+      orderID,
+      productID,
+    );
     if (!result.rows || result.rows.length === 0) {
       return res.status(404).json({ message: "Order Not Found!" });
     }
     res.status(200).json({
-      order: result.rows,
+      order: result.rows[0],
     });
   } catch (err) {
     next(err);
@@ -299,7 +311,7 @@ const stripeWebhook = async (req, res, next) => {
           const productID = item.product_id;
           const quantity = item.quantity;
           const price = item.price;
-           // delivery_days in set in DEFAULT of 7 days in database
+          // delivery_days in set in DEFAULT of 7 days in database
           const dateReceiveMs =
             currentTime + Number(item.delivery_days) * 24 * 60 * 60 * 1000;
           await Orders.postOrderItems(
@@ -529,7 +541,7 @@ exports.getCart = getCart;
 exports.postCheckout = postCheckout;
 exports.getIndex = getIndex;
 exports.getOrders = getOrders;
-exports.getOrder = getOrder
+exports.getOrderAndProduct = getOrderAndProduct;
 exports.getProduct = getProduct;
 exports.postCart = postCart;
 exports.getAvailableDeliveryOptionsDetails = getAvailableDeliveryOptionsDetails;

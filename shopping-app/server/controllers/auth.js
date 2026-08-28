@@ -165,7 +165,7 @@ const postReset = (req, res, next) => {
       ]);
       if (foundUser.rows.length === 0) {
         return res.status(200).json({
-          emailVerifyMessage: "reset link has been sent if the email address is valid",
+          message: "reset link has been sent if the email address is valid",
         });
       }
       await db.query(
@@ -189,7 +189,7 @@ const postReset = (req, res, next) => {
               `,
       });
       return res.status(200).json({
-        emailSendingMessage: "Reset Email Sent Successfully!",
+        message: "reset link has been sent if the email address is valid",
       });
     } catch (err) {
       next(err);

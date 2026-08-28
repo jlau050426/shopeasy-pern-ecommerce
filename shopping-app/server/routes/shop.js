@@ -15,7 +15,7 @@ router.get('/delivery-options', shopController.getAvailableDeliveryOptionsDetail
 router.delete('/cart-delete-item/:id', isAuth, shopController.removeCart) //done
 router.put(`/cart-items/:id`, isAuth, shopController.updateCartDeliveryOption)
 router.get('/checkout/orders', isAuth, shopController.getOrders)
-router.get('/checkout/orders/:orderID', isAuth, shopController.getOrder)
+router.get('/checkout/order-&-product', isAuth, shopController.getOrderAndProduct)
 router.post('/checkout',isAuth,shopController.postCheckout);
 router.delete('/orders/:orderId', isAuth, shopController.removeOrder)
 router.get('/order/:orderID', isAuth, shopController.getInvoice)
