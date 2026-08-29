@@ -37,7 +37,7 @@ export function ProductContainer({ product, fetchCart }) {
         <img
           className="product-image"
           data-testid="product-image"
-          src={product.imageurl}
+          src={`${import.meta.env.VITE_API_URL}/${product.imageurl}}`}
         />
       </div>
 
@@ -86,7 +86,7 @@ export function ProductContainer({ product, fetchCart }) {
       <button
         className="add-to-cart-button button-primary"
         onClick={() => CartDetail(product.id)}
-        data-testid="add-to-cart-button"
+        data-testid="product-details-button"
       >
         Product Details
       </button>

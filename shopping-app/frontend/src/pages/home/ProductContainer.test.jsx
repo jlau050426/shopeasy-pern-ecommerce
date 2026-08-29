@@ -5,9 +5,13 @@ import { render, screen } from "@testing-library/react";
 import { ProductContainer } from "./ProductContainer";
 import userEvent from "@testing-library/user-event";
 import apiClient from "../../services/apiClient";
+import { MemoryRouter } from "react-router-dom";
 
-//mock axios
-vi.mock("axios");
+vi.mock("../../services/apiClient", () => ({
+  default: {
+    post: vi.fn().mockResolvedValue({}),
+  },
+}));
 
 describe("Product detailed component", () => {
   let product;
@@ -19,14 +23,11 @@ describe("Product detailed component", () => {
   beforeEach(() => {
     product = {
       id: "e43638ce-6aa0-4b85-b27f-e1d07eb678c6",
-      image: "images/products/athletic-cotton-socks-6-pairs.jpg",
-      name: "Black and Gray Athletic Cotton Socks - 6 Pairs",
-      rating: {
-        stars: 4.5,
-        count: 87,
-      },
-      priceCents: 1090,
-      keywords: ["socks", "sports", "apparel"],
+      imageurl: "images/products/athletic-cotton-socks-6-pairs.jpg",
+      title: "Black and Gray Athletic Cotton Socks - 6 Pairs",
+      rating_star: 4.5,
+      rating_count: 87,
+      price: 10.90,
     };
 
     fetchCart = vi.fn();
@@ -34,17 +35,16 @@ describe("Product detailed component", () => {
 
   it("display the component detail correctly", () => {
     render(
-      <ProductContainer
-        product={product}
-        fetchCart={fetchCart}
-      ></ProductContainer>,
+      <MemoryRouter>
+        <ProductContainer product={product} fetchCart={fetchCart} />
+      </MemoryRouter>,
     );
 
     //test HomePage components
     expect(
       screen.getByText("Black and Gray Athletic Cotton Socks - 6 Pairs"),
     ).toBeInTheDocument();
-    expect(screen.getByText("$10.90")).toBeInTheDocument();
+    expect(screen.getByText("RM10.90")).toBeInTheDocument();
     expect(screen.getByTestId("product-image")).toHaveAttribute(
       "src",
       "images/products/athletic-cotton-socks-6-pairs.jpg",
@@ -60,24 +60,20 @@ describe("Product detailed component", () => {
   it("adds a product to the cart", async () => {
     const product = {
       id: "e43638ce-6aa0-4b85-b27f-e1d07eb678c6",
-      image: "images/products/athletic-Fcotton-socks-6-pairs.jpg",
-      name: "Black and Gray Athletic Cotton Socks - 6 Pairs",
-      rating: {
-        stars: 4.5,
-        count: 87,
-      },
-      priceCents: 1090,
-      keywords: ["socks", "sports", "apparel"],
+      imageurl: "images/products/athletic-cotton-socks-6-pairs.jpg",
+      title: "Black and Gray Athletic Cotton Socks - 6 Pairs",
+      rating_star: 4.5,
+      rating_count: 87,
+      price: 10.90,
     };
 
     //mock function to prevent modifying the real data
     const fetchCart = vi.fn();
 
     render(
-      <ProductContainer
-        product={product}
-        fetchCart={fetchCart}
-      ></ProductContainer>,
+      <MemoryRouter>
+        <ProductContainer product={product} fetchCart={fetchCart} />
+      </MemoryRouter>,
     );
 
     //simulate user event
@@ -85,7 +81,7 @@ describe("Product detailed component", () => {
     const addToCartButton = screen.getByTestId("add-to-cart-button");
     await user.click(addToCartButton);
     expect(apiClient.post).toHaveBeenCalledWith(
-      "http://localhost:3000/api/cart-items",
+      "/cart",
       {
         productId: "e43638ce-6aa0-4b85-b27f-e1d07eb678c6",
         quantity: 1,
