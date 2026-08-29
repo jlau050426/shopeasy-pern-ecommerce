@@ -30,7 +30,7 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
               </div>
 
               <div className="cart-item-details-grid">
-                <img className="product-image" src={cartItem.imageurl} />
+                <img className="product-image" src={`${import.meta.env.VITE_API_URL}/${cartItem.imageurl}`} />
 
                 <div className="cart-item-details">
                   <div className="product-name">{cartItem.title}</div>

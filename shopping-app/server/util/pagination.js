@@ -1,27 +1,26 @@
-const Product = require('../model/product')
+const Product = require("../model/product");
 
 //this is an async function
 const pagination = async (req, next, productsPerPage, callback) => {
-    let page = Number(req.query.page) || 1
+  let page = Number(req.query.page);
 
-    if (!Number.isInteger(page) || page < 1) {
-        page = 1;
-    }
+  if (!Number.isInteger(page) || page < 1) {
+    page = 1;
+  }
 
-    const offset = (page - 1) * productsPerPage
+  const offset = (page - 1) * productsPerPage;
 
-    try {
-        const fetchPage = await Product.fetchPage(productsPerPage, offset)
-        //calculate total pages to be generated
-        const countProducts = await Product.countProducts()
-        const totalProducts = countProducts.rows[0].count
-        const totalPages = Math.ceil(totalProducts / productsPerPage)
+  try {
+    const fetchPage = await Product.fetchPage(productsPerPage, offset);
+    //calculate total pages to be generated
+    const countProducts = await Product.countProducts();
+    const totalProducts = countProducts.rows[0].count;
+    const totalPages = Math.ceil(totalProducts / productsPerPage);
 
-        await callback(fetchPage, totalPages)
+    await callback(fetchPage, totalPages, page);
+  } catch (error) {
+    next(error);
+  }
+};
 
-    } catch (error) {
-        next(error)
-    }
-}
-
-exports.pagination = pagination
+exports.pagination = pagination;

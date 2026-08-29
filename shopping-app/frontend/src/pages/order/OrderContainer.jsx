@@ -41,7 +41,7 @@ export function OrderContainer({ order, handleOrderReceived }) {
           return (
             <Fragment key={item.product_id}>
               <div className="product-image-container">
-                <img src={item.imageurl} />
+                <img src={`${import.meta.env.VITE_API_URL}/${item.imageurl}`} />
               </div>
 
               <div className="product-details">

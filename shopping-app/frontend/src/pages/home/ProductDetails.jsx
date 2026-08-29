@@ -56,7 +56,7 @@ export function ProductDetails({ cart }) {
 
             <div style={{ margin: "20px 0" }}>
               <img
-                src={`${import.meta.env.VITE_API_URL}/${product.imageurl}}`}
+                src={`${import.meta.env.VITE_API_URL}/${product.imageurl}`}
                 alt={product.title}
                 style={{
                   maxWidth: "350px",

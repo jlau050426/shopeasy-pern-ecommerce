@@ -46,15 +46,15 @@ function App() {
         element={<ProductDetails cart={cart} />}
       />
       <Route
-        path="checkout"
+        path="/checkout"
         element={<CheckoutPage cart={cart} fetchCart={fetchCart} />}
       />
       <Route path="/checkout/orders" element={<OrdersPage cart={cart} fetchCart={fetchCart} />} />
-      <Route path="tracking" element={<TrackingPage cart={cart} />} />
-      <Route path="login" element={<LoginPage />} />
-      <Route path="sign-up" element={<SignupPage />} />
-      <Route path="reset-password" element={<PasswordResetPage />} />
-      <Route path="set-new-password/:token" element={<NewPasswordPage />} />
+      <Route path="/tracking" element={<TrackingPage cart={cart} />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/sign-up" element={<SignupPage />} />
+      <Route path="/reset-password" element={<PasswordResetPage />} />
+      <Route path="/set-new-password/:token" element={<NewPasswordPage />} />
       <Route path="*" element={<Error404 cart={cart} />} />
     </Routes>
   );

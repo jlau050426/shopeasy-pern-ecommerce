@@ -37,7 +37,7 @@ export function ProductContainer({ product, fetchCart }) {
         <img
           className="product-image"
           data-testid="product-image"
-          src={`${import.meta.env.VITE_API_URL}/${product.imageurl}}`}
+          src={`${import.meta.env.VITE_API_URL}/${product.imageurl}`}
         />
       </div>
 

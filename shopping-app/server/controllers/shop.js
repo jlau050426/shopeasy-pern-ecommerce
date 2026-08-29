@@ -12,14 +12,23 @@ const db = require("../util/database.js");
 
 const getIndex = async (req, res, next) => {
   const productsPerPage = 2;
+
   await pagination(
     req,
     next,
     productsPerPage,
-    async (fetchPage, totalPages) => {
+    async (fetchPage, totalPages, page) => {
+      if ((totalPages > 0 && page > totalPages)) {
+        return res.status(400).json({
+          message: "page exceeds maximum pages, redirecting to page 1.....",
+          totalPages: totalPages,
+          prods: fetchPage.rows
+        })
+      }
       res.status(200).json({
         prods: fetchPage.rows,
         totalPages: totalPages,
+        currentPage: page
       });
     },
   );

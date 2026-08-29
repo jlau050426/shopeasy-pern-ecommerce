@@ -97,14 +97,14 @@ export function OrderTracking() {
       <div className="delivery-date">{errorMessage}</div>
 
       <div className="delivery-date">
-        Arriving on {dayjs(dateReceiveMs).format("dddd, MMMM D")}
+        Arriving on {dayjs(Number(dateReceiveMs)).format("dddd, MMMM D")}
       </div>
 
       <div className="product-info">{orderAndProduct.title}</div>
 
       <div className="product-info">Quantity: {orderAndProduct.quantity}</div>
 
-      <img className="product-image" src={orderAndProduct.imageurl} />
+      <img className="product-image" src={`${import.meta.env.VITE_API_URL}/${orderAndProduct.imageurl}`} />
 
       <div className="progress-labels-container">
         <div
