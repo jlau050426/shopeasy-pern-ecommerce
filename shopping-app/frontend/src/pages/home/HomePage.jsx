@@ -6,7 +6,7 @@ import { ProductContainer } from "./ProductContainer";
 import { generatePagination } from "./pagination";
 import { useSearchParams } from "react-router-dom";
 
-export function HomePage({ cart, fetchCart }) {
+export function HomePage({ cart, fetchCart, isLoggedIn}) {
   const [products, setProducts] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [totalPages, setTotalPages] = useState(null);
@@ -63,7 +63,7 @@ export function HomePage({ cart, fetchCart }) {
   return (
     <>
       <title>Ecommerce Project</title>
-      <Header cart={cart} search={search} setSearch={setSearch}></Header>
+      <Header cart={cart} search={search} setSearch={setSearch} isLoggedIn={isLoggedIn}></Header>
       <div className="home-page">
         {errorMessage && (
           <div

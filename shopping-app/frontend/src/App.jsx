@@ -16,13 +16,17 @@ function App() {
   //state lifted up
   //track cart quantity
   const [cart, setCart] = useState([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  
   async function fetchCart() {
     try {
       const response = await apiClient.get("/cart");
       setCart(response.data.cart || []);
+      setIsLoggedIn(true)
     } catch (error) {
       if (error.response?.status === 401) {
         setCart([])
+        setIsLoggedIn(false)
         return
       }
       console.log(error);
@@ -37,21 +41,12 @@ function App() {
   return (
     <Routes>
       {/* Route add page to website  */}
-      <Route
-        path="/"
-        element={<HomePage cart={cart} fetchCart={fetchCart} />}
-      />
-      <Route
-        path="/product/:productID"
-        element={<ProductDetails cart={cart} />}
-      />
-      <Route
-        path="/checkout"
-        element={<CheckoutPage cart={cart} fetchCart={fetchCart} />}
-      />
+      <Route path="/" element={<HomePage cart={cart} fetchCart={fetchCart} isLoggedIn={isLoggedIn}/>}/>
+      <Route path="/product/:productID" element={<ProductDetails cart={cart} />}/>
+      <Route path="/checkout" element={<CheckoutPage cart={cart} fetchCart={fetchCart} />}/>
       <Route path="/checkout/orders" element={<OrdersPage cart={cart} fetchCart={fetchCart} />} />
       <Route path="/tracking" element={<TrackingPage cart={cart} />} />
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/login" element={<LoginPage fetchCart={fetchCart}/>} />
       <Route path="/sign-up" element={<SignupPage />} />
       <Route path="/reset-password" element={<PasswordResetPage />} />
       <Route path="/set-new-password/:token" element={<NewPasswordPage />} />

@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import "./login-page.css";
 import apiClient from "../../services/apiClient";
 
-export function LoginPage() {
+export function LoginPage( {fetchCart} ) {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,6 +21,9 @@ export function LoginPage() {
       });
 
       if (response.status === 200) {
+        if (fetchCart) {
+          await fetchCart()
+        }
         navigate("/");
       }
     } catch (error) {
@@ -38,22 +41,6 @@ export function LoginPage() {
     }
   }
 
-  async function handleLogout() {
-    try {
-      await apiClient.post("/logout");
-      setEmail("");
-      setPassword("");
-      navigate("/login");
-    } catch (error) {
-      console.log(error);
-      if (error.response) {
-        setErrorMessage(error.response.data?.message || "An error occured");
-      } else {
-        setErrorMessage("Unable to Connect to Server!")
-      }
-    }
-  }
-
   return (
     <main className="login-page">
       <section className="login-card" aria-labelledby="login-heading">
@@ -61,13 +48,6 @@ export function LoginPage() {
           <Link className="login-brand" to="/" aria-label="Go to homepage">
             ShopEasy
           </Link>
-          <button
-            className="logout-button"
-            type="button"
-            onClick={handleLogout}
-          >
-            Log out
-          </button>
         </div>
 
         <div className="login-card__content">

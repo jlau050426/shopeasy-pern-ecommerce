@@ -18,17 +18,17 @@ const getIndex = async (req, res, next) => {
     next,
     productsPerPage,
     async (fetchPage, totalPages, page) => {
-      if ((totalPages > 0 && page > totalPages)) {
+      if (totalPages > 0 && page > totalPages) {
         return res.status(400).json({
           message: "page exceeds maximum pages, redirecting to page 1.....",
           totalPages: totalPages,
-          prods: fetchPage.rows
-        })
+          prods: fetchPage.rows,
+        });
       }
       res.status(200).json({
         prods: fetchPage.rows,
         totalPages: totalPages,
-        currentPage: page
+        currentPage: page,
       });
     },
   );

@@ -2,6 +2,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import apiClient from "../../services/apiClient";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
 
 export function OrderTracking() {
   const [orderAndProduct, setOrderAndProduct] = useState(null);
@@ -9,21 +10,25 @@ export function OrderTracking() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentTime] = useState(() => Date.now());
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate()
 
   const orderID = searchParams.get("orderID");
   const productID = searchParams.get("productID");
 
   useEffect(() => {
-    if (!orderID || !productID) {
-      return;
-    }
     async function fetchOrderAndProduct() {
       try {
-        const response = await apiClient.get(`/checkout/order-&-product?orderID=${orderID}&productID=${productID}`);
+        const response = await apiClient.get(
+          `/checkout/order-&-product?orderID=${orderID}&productID=${productID}`,
+        );
 
-        setOrderAndProduct(response.data.order);
+        setOrderAndProduct(response.data?.order || null);
       } catch (error) {
         console.error("Error fetching data ", error);
+        if (error.response?.status === 401) {
+          navigate("/login", {replace: true});
+          return
+        }
         if (error.response) {
           setErrorMessage(
             error.response.data.message || "failed to fetch order",
@@ -37,7 +42,7 @@ export function OrderTracking() {
     }
 
     fetchOrderAndProduct();
-  }, [orderID, productID]);
+  }, [orderID, productID, navigate]);
 
   if (isLoading) {
     return (
@@ -104,7 +109,10 @@ export function OrderTracking() {
 
       <div className="product-info">Quantity: {orderAndProduct.quantity}</div>
 
-      <img className="product-image" src={`${import.meta.env.VITE_API_URL}/${orderAndProduct.imageurl}`} />
+      <img
+        className="product-image"
+        src={`${import.meta.env.VITE_API_URL}/${orderAndProduct.imageurl}`}
+      />
 
       <div className="progress-labels-container">
         <div
