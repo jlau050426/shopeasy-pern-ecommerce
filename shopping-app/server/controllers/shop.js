@@ -11,7 +11,7 @@ const { pagination } = require("../util/pagination.js");
 const db = require("../util/database.js");
 
 const getIndex = async (req, res, next) => {
-  const productsPerPage = 2;
+  const productsPerPage = 50;
 
   await pagination(
     req,

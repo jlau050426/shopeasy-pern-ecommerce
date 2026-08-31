@@ -12,7 +12,10 @@ export function AdminProductContainer({ product, onDelete }) {
   }
 
   return (
-    <div className="product-container" data-testid={`admin-product-${product.id}`}>
+    <div
+      className="product-container"
+      data-testid={`admin-product-${product.id}`}
+    >
       <div className="product-image-container">
         <img
           className="product-image"
@@ -24,6 +27,13 @@ export function AdminProductContainer({ product, onDelete }) {
 
       <div className="product-name limit-text-to-2-lines" title={product.title}>
         {product.title}
+      </div>
+
+      <div
+        className="product-name limit-text-to-2-lines"
+        title={product.description}
+      >
+        {product.description}
       </div>
 
       <div className="product-rating-container">
@@ -71,9 +81,57 @@ export function AdminProductsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-
   const [searchParams, setSearchParams] = useSearchParams();
   const page = searchParams.get("page") || 1;
+  const [countdown, setCountdown] = useState(null);
+  const navigate = useNavigate();
+
+  //countdown timer
+  useEffect(() => {
+    if (countdown === null || countdown <= 0) return;
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [countdown]);
+
+  useEffect(() => {
+    //while on edit page already validated through pre-fetch product details
+    async function validateAdminValidity() {
+      try {
+        await apiClient.get("/admin/admin-page");
+      } catch (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            setErrorMessage(error.response.data.message);
+            setCountdown(5);
+            setTimeout(() => {
+              navigate("/login");
+            }, 5000);
+          } else if (error.response.status === 403) {
+            setErrorMessage(error.response.data.message);
+            setCountdown(5);
+            setTimeout(() => {
+              navigate("/");
+            }, 5000);
+          } else {
+            setErrorMessage(
+              error.response.data?.errorMessage || "Something Wrong",
+            );
+            setCountdown(5);
+            setTimeout(() => {
+              navigate("/admin/products");
+            }, 5000);
+          }
+        } else {
+          setErrorMessage("Unable to connect to the server. Please try again.");
+        }
+      }
+    }
+    validateAdminValidity();
+  }, [navigate]);
 
   useEffect(() => {
     async function fetchProducts() {
@@ -98,7 +156,8 @@ export function AdminProductsPage() {
         console.error("Error fetching admin products:", error);
         if (error.response) {
           setErrorMessage(
-            error.response.data?.message || "An error occurred while loading products.",
+            error.response.data?.message ||
+              "An error occurred while loading products.",
           );
           setProducts([]);
           if (error.response.status === 400) {
@@ -127,21 +186,21 @@ export function AdminProductsPage() {
 
   async function handleDelete(productId, productTitle) {
     const isConfirmed = window.confirm(
-      `Are you sure you want to delete "${productTitle}"? This action cannot be undone.`
+      `Are you sure you want to delete "${productTitle}"? This action cannot be undone.`,
     );
     if (!isConfirmed) return;
 
     try {
       await apiClient.delete(`/admin/delete-product/${productId}`);
       setProducts((prevProducts) =>
-        prevProducts.filter((product) => product.id !== productId)
+        prevProducts.filter((product) => product.id !== productId),
       );
     } catch (error) {
       console.error("Error deleting product:", error);
       setErrorMessage(
         error.response?.data?.message ||
           error.response?.data?.errorMessage ||
-          "Failed to delete product. Please try again."
+          "Failed to delete product. Please try again.",
       );
     }
   }
@@ -211,21 +270,37 @@ export function AdminProductsPage() {
           <p>View and manage all items in your store catalog</p>
         </div>
         <div className="admin-product-count">
-          {filteredProducts.length} {filteredProducts.length === 1 ? "Product" : "Products"}
+          {filteredProducts.length}{" "}
+          {filteredProducts.length === 1 ? "Product" : "Products"}
         </div>
       </div>
 
-      {/* Error notification */}
       {errorMessage && (
-        <div className="admin-error-banner" role="alert">
-          ⚠️ {errorMessage}
+        <div className="header-error" role="alert">
+          <span className="header-error-icon" aria-hidden="true">
+            !
+          </span>
+          <span>{errorMessage}</span>
+          {countdown !== null && countdown > 0 && (
+            <span> Redirecting in {countdown}...</span>
+          )}
+          <button
+            className="header-error-close"
+            type="button"
+            onClick={() => setErrorMessage("")}
+            aria-label="Dismiss error"
+          >
+            &times;
+          </button>
         </div>
       )}
 
       {/* Main Content */}
       <main className="admin-products-content">
         {isLoading ? (
-          <div style={{ textAlign: "center", padding: "60px 0", color: "#66756c" }}>
+          <div
+            style={{ textAlign: "center", padding: "60px 0", color: "#66756c" }}
+          >
             Loading products...
           </div>
         ) : filteredProducts.length === 0 ? (

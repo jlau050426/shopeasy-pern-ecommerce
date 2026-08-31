@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./addProductForm.css";
 import apiClient from "../../services/apiClient";
@@ -11,10 +11,56 @@ export function AddProductForm() {
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
   const [imageFile, setImageFile] = useState(null);
-
+  const [countdown, setCountdown] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  useEffect(() => {
+    if (countdown === null || countdown <= 0) return;
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [countdown]);
+
+  useEffect(() => {
+    //while on edit page already validated through pre-fetch product details
+    async function validateAdminValidity() {
+      try {
+        await apiClient.get("/admin/add-product");
+      } catch (error) {
+        if (error.response) {
+          if (error.response.status === 401) {
+            setErrorMessage(error.response.data.message);
+            setCountdown(5);
+            setTimeout(() => {
+              navigate("/login");
+            }, 5000);
+          } else if (error.response.status === 403) {
+            setErrorMessage(error.response.data.message);
+            setCountdown(5);
+            setTimeout(() => {
+              navigate("/");
+            }, 5000);
+          } else {
+            setErrorMessage(
+              error.response.data?.errorMessage || "Something Wrong",
+            );
+            setCountdown(5);
+            setTimeout(() => {
+              navigate("/admin/products");
+            }, 5000);
+          }
+        } else {
+          setErrorMessage("Unable to connect to the server. Please try again.");
+        }
+      }
+    }
+    validateAdminValidity()
+  }, [navigate]);
 
   function handleFileSelect(event) {
     const file = event.target.files?.[0];
@@ -27,14 +73,15 @@ export function AddProductForm() {
       setErrorMessage(
         "Please select a valid image file (PNG, JPG, JPEG, WEBP, etc.).",
       );
+      setTimeout(() => {
+        setErrorMessage("");
+      }, 3000);
       setImageFile(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
       return;
     }
-
-    setErrorMessage("");
     setImageFile(file);
   }
 
@@ -52,27 +99,37 @@ export function AddProductForm() {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    setErrorMessage("");
-    setSuccessMessage("");
 
     if (!title.trim() || title.trim().length < 3) {
       setErrorMessage("Title must be at least 3 characters long.");
+      setTimeout(() => {
+        setErrorMessage("");
+      }, 3000);
       return;
     }
 
     if (!imageFile) {
       setErrorMessage("Please select a product image to upload.");
+      setTimeout(() => {
+        setErrorMessage("");
+      }, 3000);
       return;
     }
 
     const numericPrice = parseFloat(price);
     if (isNaN(numericPrice) || numericPrice <= 0) {
       setErrorMessage("Please enter a valid price greater than $0.00.");
+      setTimeout(() => {
+        setErrorMessage("");
+      }, 3000);
       return;
     }
 
     if (!description.trim() || description.trim().length < 6) {
       setErrorMessage("Description must be at least 6 characters long.");
+      setTimeout(() => {
+        setErrorMessage("");
+      }, 3000);
       return;
     }
 
@@ -88,35 +145,37 @@ export function AddProductForm() {
       const response = await apiClient.post("/admin/add-product", formData);
 
       if (response.status === 200 || response.status === 201) {
+        handleReset();
         setSuccessMessage(
           response.data.successMessage || "Product added successfully!",
         );
-        handleReset();
+        setCountdown(5);
         setTimeout(() => {
           navigate("/admin/products");
-        }, 2000);
+        }, 5000);
       }
     } catch (error) {
-      console.error("Failed to add product:", error);
       if (error.response) {
-        console.log("error response: ", error.response);
         if (error.response.status === 401) {
           setErrorMessage(error.response.data.message);
+          setCountdown(5);
           setTimeout(() => {
             navigate("/login");
-          }, 2000);
+          }, 5000);
         } else if (error.response.status === 403) {
           setErrorMessage(error.response.data.message);
+          setCountdown(5);
           setTimeout(() => {
             navigate("/");
-          }, 2000);
+          }, 5000);
         } else {
           setErrorMessage(
             error.response.data?.errorMessage || "Something Wrong",
           );
+          setCountdown(5);
           setTimeout(() => {
             navigate("/admin/add-product");
-          }, 2000);
+          }, 5000);
         }
       } else {
         setErrorMessage("Unable to connect to the server. Please try again.");
@@ -154,16 +213,42 @@ export function AddProductForm() {
           </p>
 
           {errorMessage && (
-            <div className="admin-alert admin-alert--error" role="alert">
-              <span>⚠️</span>
+            <div className="header-error" role="alert">
+              <span className="header-error-icon" aria-hidden="true">
+                !
+              </span>
               <span>{errorMessage}</span>
+              {countdown !== null && countdown > 0 && (
+                <span> Redirecting in {countdown}...</span>
+              )}
+              <button
+                className="header-error-close"
+                type="button"
+                onClick={() => setErrorMessage("")}
+                aria-label="Dismiss error"
+              >
+                &times;
+              </button>
             </div>
           )}
 
           {successMessage && (
-            <div className="admin-alert admin-alert--success" role="status">
-              <span>✅</span>
+            <div className="header-success" role="alert">
+              <span className="header-success-icon" aria-hidden="true">
+                !
+              </span>
               <span>{successMessage}</span>
+              {countdown !== null && countdown > 0 && (
+                <span> Redirecting in {countdown}...</span>
+              )}
+              <button
+                className="header-success-close"
+                type="button"
+                onClick={() => setSuccessMessage("")}
+                aria-label="Dismiss error"
+              >
+                &times;
+              </button>
             </div>
           )}
 

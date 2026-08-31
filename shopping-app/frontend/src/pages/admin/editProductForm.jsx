@@ -11,11 +11,22 @@ export function EditProductForm() {
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
   const [imageFile, setImageFile] = useState(null);
+  const [countdown, setCountdown] = useState(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const { productID } = useParams();
+
+  useEffect(() => {
+    if (countdown === null || countdown <= 0) return;
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [countdown]);
 
   function handleFileSelect(event) {
     const file = event.target.files?.[0];
@@ -34,8 +45,9 @@ export function EditProductForm() {
       }
       return;
     }
-
-    setErrorMessage("");
+    setTimeout(() => {
+      setErrorMessage("");
+    }, 3000);
     setImageFile(file);
   }
 
@@ -53,8 +65,6 @@ export function EditProductForm() {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    setErrorMessage("");
-    setSuccessMessage("");
 
     if (!title.trim() || title.trim().length < 3) {
       setErrorMessage("Title must be at least 3 characters long.");
@@ -90,34 +100,37 @@ export function EditProductForm() {
       const response = await apiClient.post("/admin/edit-product", formData);
 
       if (response.status === 200 || response.status === 201) {
+        handleReset();
         setSuccessMessage(
           response.data.successMessage || "Product updated successfully!",
         );
-        handleReset();
+        setCountdown(5);
         setTimeout(() => {
           navigate("/admin/products");
-        }, 2000);
+        }, 5000);
       }
     } catch (error) {
-      console.error("Failed to add product:", error);
       if (error.response) {
         if (error.response.status === 401) {
           setErrorMessage(error.response.data.message);
+          setCountdown(5);
           setTimeout(() => {
             navigate("/login");
-          }, 2000);
+          }, 5000);
         } else if (error.response.status === 403) {
           setErrorMessage(error.response.data.message);
+          setCountdown(5);
           setTimeout(() => {
             navigate("/");
-          }, 2000);
+          }, 5000);
         } else {
           setErrorMessage(
             error.response.data?.errorMessage || "Something Wrong",
           );
+          setTimeout(5);
           setTimeout(() => {
             navigate("/admin/products");
-          }, 2000);
+          }, 5000);
         }
       } else {
         setErrorMessage("Unable to connect to the server. Please try again.");
@@ -137,16 +150,35 @@ export function EditProductForm() {
         setPrice(response.data.currentPrice);
         setDescription(response.data.currentDescription);
       } catch (error) {
-        console.error("Failed to add product:", error);
-        if (error.response?.data?.errorMessage) {
-          setErrorMessage(error.response.data.errorMessage);
+        if (error.response) {
+          if (error.response.status === 401) {
+            setErrorMessage(error.response.data.message);
+            setCountdown(5);
+            setTimeout(() => {
+              navigate("/login");
+            }, 5000);
+          } else if (error.response.status === 403) {
+            setErrorMessage(error.response.data.message);
+            setCountdown(5);
+            setTimeout(() => {
+              navigate("/");
+            }, 5000);
+          } else {
+            setErrorMessage(
+              error.response.data?.errorMessage || "Something Wrong",
+            );
+            setCountdown(5)
+            setTimeout(() => {
+              navigate("/admin/products");
+            }, 5000);
+          }
         } else {
           setErrorMessage("Unable to connect to the server. Please try again.");
         }
       }
     }
     fetchProductDetail();
-  }, [productID]);
+  }, [productID, navigate]);
 
   return (
     <main className="admin-product-page">
@@ -176,16 +208,42 @@ export function EditProductForm() {
           </p>
 
           {errorMessage && (
-            <div className="admin-alert admin-alert--error" role="alert">
-              <span>⚠️</span>
+            <div className="header-error" role="alert">
+              <span className="header-error-icon" aria-hidden="true">
+                !
+              </span>
               <span>{errorMessage}</span>
+              {countdown !== null && countdown > 0 && (
+                <span> Redirecting in {countdown}...</span>
+              )}
+              <button
+                className="header-error-close"
+                type="button"
+                onClick={() => setErrorMessage("")}
+                aria-label="Dismiss error"
+              >
+                &times;
+              </button>
             </div>
           )}
 
           {successMessage && (
-            <div className="admin-alert admin-alert--success" role="status">
-              <span>✅</span>
+            <div className="header-success" role="alert">
+              <span className="header-success-icon" aria-hidden="true">
+                !
+              </span>
               <span>{successMessage}</span>
+              {countdown !== null && countdown > 0 && (
+                <span> Redirecting in {countdown}...</span>
+              )}
+              <button
+                className="header-success-close"
+                type="button"
+                onClick={() => setSuccessMessage("")}
+                aria-label="Dismiss error"
+              >
+                &times;
+              </button>
             </div>
           )}
 

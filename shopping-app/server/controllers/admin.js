@@ -65,6 +65,22 @@ const getEditProduct = async (req, res, next) => {
   }
 };
 
+const getAddProduct = (req, res, next) => {
+  try {
+    return res.status(200).json();
+  } catch (err) {
+    next(err)
+  }
+};
+
+const getAdminPage = (req, res, next) => {
+  try {
+    return res.status(200).json();
+  } catch (err) {
+    next(err)
+  }
+};
+
 const postEditProduct = async (req, res, next) => {
   const id = req.body.id;
   const title = req.body.title;
@@ -78,8 +94,8 @@ const postEditProduct = async (req, res, next) => {
       await fileOperator.removeImage(image.path, next);
     }
     return res.status(422).json({
-      errorMessage: errors.array()[0].msg
-    })
+      errorMessage: errors.array()[0].msg,
+    });
   }
 
   try {
@@ -87,8 +103,8 @@ const postEditProduct = async (req, res, next) => {
     const targetedProduct = await Product.findProductByID(id);
     if (!targetedProduct.rows[0]) {
       return res.status(404).json({
-        errorMessage: "Product not Found"
-      })
+        errorMessage: "Product not Found",
+      });
     }
     const existingImageURL = targetedProduct.rows[0].imageurl;
     const imageURL = image ? image.filename : existingImageURL;
@@ -100,8 +116,8 @@ const postEditProduct = async (req, res, next) => {
     const updatedProduct = new Product(title, imageURL, price, description);
     await Product.editProduct(id, updatedProduct);
     return res.status(200).json({
-      successMessage: "Product Updated Successfully!"
-    })
+      successMessage: "Product Updated Successfully!",
+    });
   } catch (err) {
     next(err);
   }
@@ -132,6 +148,8 @@ const removeProduct = async (req, res, next) => {
   }
 };
 
+exports.getAdminPage = getAdminPage
+exports.getAddProduct = getAddProduct;
 exports.postAddProduct = postAddProduct;
 exports.getEditProduct = getEditProduct;
 exports.postEditProduct = postEditProduct;
