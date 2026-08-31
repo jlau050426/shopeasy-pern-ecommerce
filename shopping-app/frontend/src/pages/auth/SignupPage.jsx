@@ -21,7 +21,7 @@ export function SignupPage() {
         email: email,
         password: password,
         confirmPassword: confirmPassword,
-        adminInvitationCode: isAdmin? adminInvitationCode : undefined
+        adminInvitationCode: isAdmin ? adminInvitationCode : undefined,
       });
 
       if (response.status === 201) {
@@ -56,7 +56,22 @@ export function SignupPage() {
         </div>
 
         <div className="signup-card__content">
-          <p className="signup-eyebrow">{errorMessage}</p>
+          {errorMessage && (
+            <div className="header-error" role="alert">
+              <span className="header-error-icon" aria-hidden="true">
+                !
+              </span>
+              <span>{errorMessage}</span>
+              <button
+                className="header-error-close"
+                type="button"
+                onClick={() => setErrorMessage("")}
+                aria-label="Dismiss error"
+              >
+                &times;
+              </button>
+            </div>
+          )}
           <p className="signup-eyebrow">CREATE YOUR ACCOUNT</p>
           <h1 id="signup-heading">Start shopping with us</h1>
           <p className="signup-subtitle">

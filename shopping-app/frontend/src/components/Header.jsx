@@ -3,7 +3,7 @@ import "./header.css";
 import { cartQuantity } from "../utils/cartQuantity";
 import apiClient from "../services/apiClient";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function Header({
   cart = [],
@@ -14,6 +14,8 @@ export function Header({
   const totalQuantity = cartQuantity(cart);
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   async function handleLogout() {
     try {
@@ -28,6 +30,43 @@ export function Header({
       }
     }
   }
+
+  useEffect(() => {
+    async function adminValidation() {
+      try {
+        const response = await apiClient.get("/check-admin");
+        if (response.status === 200) {
+          setIsAdmin(true);
+          setSuccessMessage(response.data?.successMessage || "Welcome Admin");
+          setTimeout(() => {
+            setSuccessMessage("");
+          }, 3000);
+        }
+      } catch (error) {
+        console.log(error);
+        if (error.response) {
+          if (error.response.status === 401) {
+            setIsAdmin(false);
+          } else if (error.response.status === 403) {
+            setSuccessMessage(
+              error.response.data?.errorMessage || "Welcome User",
+            );
+            setIsAdmin(false);
+            setTimeout(() => {
+              setSuccessMessage("");
+            }, 3000);
+          } else {
+            setErrorMessage("Failed to Pass Admin Validation");
+          }
+        } else {
+          setErrorMessage("Unable to connect to server");
+        }
+      }
+    }
+
+    adminValidation();
+  }, []);
+
   return (
     <>
       <div className="header">
@@ -54,7 +93,31 @@ export function Header({
           </button>
         </div>
 
-        {isLoggedIn ? (
+        {isLoggedIn && isAdmin ? (
+          //result 2
+          <div className="right-section">
+            <Link className="orders-link header-link" to="/admin/products">
+              <span className="orders-text"> Admin Page </span>
+            </Link>
+            <Link className="orders-link header-link" to="/checkout/orders">
+              <span className="orders-text">Orders</span>
+            </Link>
+
+            <Link className="cart-link header-link" to="/checkout">
+              <img className="cart-icon" src="/images/icons/cart-icon.png" />
+              <div className="cart-quantity">{totalQuantity}</div>
+              <div className="cart-text">Cart</div>
+            </Link>
+            <button
+              className="logout-button"
+              type="button"
+              onClick={handleLogout}
+            >
+              Log out
+            </button>
+          </div>
+        ) : isLoggedIn ? (
+          //result 1
           <div className="right-section">
             <Link className="orders-link header-link" to="/checkout/orders">
               <span className="orders-text">Orders</span>
@@ -92,6 +155,23 @@ export function Header({
             className="header-error-close"
             type="button"
             onClick={() => setErrorMessage("")}
+            aria-label="Dismiss error"
+          >
+            &times;
+          </button>
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="header-success" role="alert">
+          <span className="header-success-icon" aria-hidden="true">
+            !
+          </span>
+          <span>{successMessage}</span>
+          <button
+            className="header-success-close"
+            type="button"
+            onClick={() => setSuccessMessage("")}
             aria-label="Dismiss error"
           >
             &times;

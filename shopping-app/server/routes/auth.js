@@ -82,4 +82,6 @@ router.post(
   ],
   authController.postNewPasswordForm,
 );
+
+router.get("/check-admin", authController.checkIsAdmin)
 module.exports = router;

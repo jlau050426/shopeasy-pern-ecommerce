@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import "./login-page.css";
 import apiClient from "../../services/apiClient";
 
-export function LoginPage( {fetchCart} ) {
+export function LoginPage({ fetchCart }) {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,7 +22,7 @@ export function LoginPage( {fetchCart} ) {
 
       if (response.status === 200) {
         if (fetchCart) {
-          await fetchCart()
+          await fetchCart();
         }
         navigate("/");
       }
@@ -31,7 +31,7 @@ export function LoginPage( {fetchCart} ) {
       if (error.response) {
         setErrorMessage(error.response.data?.message || "An error occured");
         if (error.response.data?.oldInput?.email) {
-          setEmail(error.response.data.oldInput.email); 
+          setEmail(error.response.data.oldInput.email);
         }
       } else {
         setErrorMessage("Unable to Connect to Server");
@@ -51,7 +51,22 @@ export function LoginPage( {fetchCart} ) {
         </div>
 
         <div className="login-card__content">
-          <p className="login-eyebrow">{errorMessage}</p>
+          {errorMessage && (
+            <div className="header-error" role="alert">
+              <span className="header-error-icon" aria-hidden="true">
+                !
+              </span>
+              <span>{errorMessage}</span>
+              <button
+                className="header-error-close"
+                type="button"
+                onClick={() => setErrorMessage("")}
+                aria-label="Dismiss error"
+              >
+                &times;
+              </button>
+            </div>
+          )}
           <p className="login-eyebrow">WELCOME BACK</p>
           <h1 id="login-heading">Log in to your account</h1>
           <p className="login-subtitle">

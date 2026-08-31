@@ -53,7 +53,6 @@ const postLogin = async (req, res, next) => {
       req.session.isLoggedIn = true;
       req.session.sessionUserID = existingUser.rows[0].id;
       req.session.sessionUserRole = existingUser.rows[0].role;
-      console.log("role: ", existingUser.rows[0].role);
       req.session.save((err) => {
         if (err) {
           console.log(err);
@@ -108,7 +107,7 @@ const postSignUp = async (req, res, next) => {
       role = "ADMIN";
     }else{
       return res.status(422).json({
-        message: "Invalid admin invitation code", 
+        message: "Invalid admin invitation code",
         oldInput: {
           email: email
         },
@@ -271,8 +270,32 @@ const postNewPasswordForm = async (req, res, next) => {
   }
 };
 
+const checkIsAdmin = (req, res, next) => {
+
+  //check is logged in first
+  //check isAdmin
+  //return as user
+
+  if (!req.session.isLoggedIn) {
+    return res.status(401).json({
+      errorMessage: "Log In for More Details"
+    })
+  }
+
+  if (req.session.sessionUserRole === "ADMIN") {
+    return res.status(200).json({
+      successMessage: "Welcome Admin"
+    })
+  }
+
+  return res.status(403).json({
+    successMessage: "Welcome User"
+  })
+}
+
 exports.postLogin = postLogin;
 exports.postLogout = postLogout;
 exports.postSignUp = postSignUp;
 exports.postReset = postReset;
 exports.postNewPasswordForm = postNewPasswordForm;
+exports.checkIsAdmin = checkIsAdmin
