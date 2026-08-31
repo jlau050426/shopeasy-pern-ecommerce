@@ -2,31 +2,19 @@
 const Product = require("../model/product");
 const fileOperator = require("../util/file");
 const { validationResult } = require("express-validator");
-const fs = require("fs");
-const dirname = require("../util/path");
 const path = require("path");
-const { pagination } = require("../util/pagination");
-const { error } = require("console");
 
-const getAddProduct = (req, res, next) => {
-  res.render("../views/admin/add-product.ejs", {
-    pageTitle: "Add Product",
-    path: "/admin/add-product",
-    errorMessage: req.flash("error"),
-  });
-};
-
+//post add product form
 const postAddProduct = async (req, res, next) => {
   const title = req.body.title;
   const image = req.file;
 
   if (!image) {
-    req.flash("error", "Image Not parsed in!");
-    return res.redirect("/admin/add-product");
+    return res.status(400).json({
+      errorMessage: "Please Insert an Image!",
+    });
   }
-  console.log(`image path: ${image.path}`);
   const imageURL = image.filename;
-
   const price = req.body.price;
   const description = req.body.description;
   const errors = validationResult(req);
@@ -35,9 +23,7 @@ const postAddProduct = async (req, res, next) => {
   if (!errors.isEmpty()) {
     //remove replaced image from local
     await fileOperator.removeImage(image.path, next);
-    return res.status(422).render("../views/admin/add-product.ejs", {
-      pageTitle: "Add Product",
-      path: "/admin/add-product",
+    return res.status(422).json({
       errorMessage: errors.array()[0].msg,
     });
   }
@@ -45,13 +31,13 @@ const postAddProduct = async (req, res, next) => {
   try {
     const newProduct = new Product(title, imageURL, price, description);
     await newProduct.save();
-    res.redirect("/admin/products");
-  } catch (error) {
+    res.status(201).json({
+      successMessage: "Product Added Successfully!",
+    });
+  } catch (err) {
     if (image) {
-      await fileOperator.removeImage(image.path, next)
+      await fileOperator.removeImage(image.path, next);
     }
-    const err = new Error(error);
-    err.statusCode = 500;
     next(err);
   }
 };
@@ -63,22 +49,18 @@ const getEditProduct = async (req, res, next) => {
     const product = result.rows[0];
 
     if (!product) {
-      console.log("NO PRODUCT");
-      return res.redirect("/");
+      return res.status(404).json({
+        errorMessage: "No Product Found!",
+      });
     }
 
-    res.render("../views/admin/edit-product.ejs", {
+    return res.status(200).json({
       currentID: productID,
       currentTitle: product.title,
-      currentImageURL: product.imageurl,
       currentPrice: product.price,
       currentDescription: product.description,
-      pageTitle: "Edit Product",
-      path: "/admin/edit-product",
     });
-  } catch (error) {
-    const err = new Error(error);
-    err.statusCode = 500;
+  } catch (err) {
     next(err);
   }
 };
@@ -95,18 +77,18 @@ const postEditProduct = async (req, res, next) => {
     if (image) {
       await fileOperator.removeImage(image.path, next);
     }
-    return res.status(422).render("../views/admin/edit-product.ejs", {
-      pageTitle: "Add Product",
-      path: "/admin/products",
-      errorMessage: errors.array()[0].msg,
-    });
+    return res.status(422).json({
+      errorMessage: errors.array()[0].msg
+    })
   }
 
   try {
     //get product by id
     const targetedProduct = await Product.findProductByID(id);
     if (!targetedProduct.rows[0]) {
-      return res.redirect("/admin/products");
+      return res.status(404).json({
+        errorMessage: "Product not Found"
+      })
     }
     const existingImageURL = targetedProduct.rows[0].imageurl;
     const imageURL = image ? image.filename : existingImageURL;
@@ -117,10 +99,10 @@ const postEditProduct = async (req, res, next) => {
 
     const updatedProduct = new Product(title, imageURL, price, description);
     await Product.editProduct(id, updatedProduct);
-    return res.redirect("/admin/products");
-  } catch (error) {
-    const err = new Error(error);
-    err.statusCode = 500;
+    return res.status(200).json({
+      successMessage: "Product Updated Successfully!"
+    })
+  } catch (err) {
     next(err);
   }
 };
@@ -150,28 +132,7 @@ const removeProduct = async (req, res, next) => {
   }
 };
 
-const getProducts = async (req, res, next) => {
-  const productsPerPage = 3;
-  await pagination(
-    req,
-    res,
-    productsPerPage,
-    "/admin/products",
-    async (fetchPage, totalPages) => {
-      res.render("../views/admin/admin-product-list.ejs", {
-        prods: fetchPage.rows,
-        pageTitle: "Admin Product",
-        path: "/admin/products",
-        totalPages: totalPages,
-        errorMessage: req.flash("error"),
-      });
-    },
-  );
-};
-
-exports.getAddProduct = getAddProduct;
 exports.postAddProduct = postAddProduct;
-exports.getProducts = getProducts;
 exports.getEditProduct = getEditProduct;
 exports.postEditProduct = postEditProduct;
 exports.removeProduct = removeProduct;

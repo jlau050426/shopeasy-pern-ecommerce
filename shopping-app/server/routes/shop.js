@@ -4,7 +4,7 @@ const router = express.Router();
 
 //imports controllers
 const shopController = require('../controllers/shop');
-const isAuth = require('../middleware/is-auth');
+const isAuth = require('../middleware/isAuth');
 
 //get product middlleware
 router.get('/', shopController.getIndex); //done

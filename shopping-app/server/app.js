@@ -6,36 +6,8 @@ const bodyParser = require("body-parser");
 const session = require("express-session");
 const crypto = require("crypto");
 const flash = require("connect-flash");
-const multer = require("multer"); //image uploads
+
 const cors = require("cors");
-
-//multer file storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "images/"); //create a directory called images on local to retrieve file
-  },
-
-  filename: (req, file, cb) => {
-    const date = new Date().toISOString().replace(/:/g, "-");
-    const fileName = file.originalname;
-    cb(null, `${date}${fileName}`); // the file will be named as date-fileName.png/.jpg.jpeg
-  },
-});
-
-//multer file filter
-const fileFilter = (req, file, cb) => {
-  if (
-    file.mimetype === "image/png" ||
-    file.mimetype === "image/jpg" ||
-    file.mimetype === "image/jpeg"
-  ) {
-    // To accept the file pass `true`, like so:
-    cb(null, true);
-  } else {
-    // To reject this file pass `false`, like so:
-    cb(null, false);
-  }
-};
 
 //initialise express app
 const app = express();
@@ -51,9 +23,6 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization", "csrf-token"],
   }),
 );
-
-app.set("view engine", "ejs");
-app.set("views", "views");
 
 //imports route
 const adminRoute = require("./routes/admin");
@@ -80,17 +49,6 @@ const verifyCsrfToken = require("./middleware/verifyCsrfToken");
 app.use(bodyParser.urlencoded({ extended: false })); //submit url-form-data
 // JSON bodyParser
 app.use(express.json());
-
-//multer middleware
-app.use(
-  multer({
-    storage: storage,
-    fileFilter: fileFilter,
-    limits: {
-      fileSize: 5 * 1024 * 1024, // 5MB
-    },
-  }).single("image"),
-);
 
 //static file
 app.use(express.static(path.join(__dirname, "public")));
