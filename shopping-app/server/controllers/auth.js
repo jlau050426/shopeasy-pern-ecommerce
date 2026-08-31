@@ -52,7 +52,7 @@ const postLogin = async (req, res, next) => {
       //create a session
       req.session.isLoggedIn = true;
       req.session.sessionUserID = existingUser.rows[0].id;
-      req.session.sessionUserRole = existingUser.rows[0].role
+      req.session.sessionUserRole = existingUser.rows[0].role;
       console.log("role: ", existingUser.rows[0].role);
       req.session.save((err) => {
         if (err) {
@@ -99,8 +99,22 @@ const postLogout = (req, res, next) => {
 const postSignUp = async (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
-  const confirmPassword = req.body.confirmPassword;
+  const adminPasskey = req.body.adminInvitationCode?.trim();
   const errors = validationResult(req);
+
+  let role = "USER";
+  if (adminPasskey) {
+    if (adminPasskey === "secret-passkey") {
+      role = "ADMIN";
+    }else{
+      return res.status(422).json({
+        message: "Invalid admin invitation code", 
+        oldInput: {
+          email: email
+        },
+      })
+    }
+  }
 
   //validation
   if (!errors.isEmpty()) {
@@ -114,10 +128,10 @@ const postSignUp = async (req, res, next) => {
 
   try {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-    await db.query("INSERT INTO users (email, password) VALUES ($1, $2)", [
-      email,
-      hashedPassword,
-    ]);
+    await db.query(
+      "INSERT INTO users (email, password, role) VALUES ($1, $2, $3)",
+      [email, hashedPassword, role],
+    );
 
     try {
       await transport.sendMail({
@@ -208,14 +222,14 @@ const postNewPasswordForm = async (req, res, next) => {
 
   if (!errors.isEmpty()) {
     return res.status(422).json({
-      message: errors.array()[0].msg
-    })
+      message: errors.array()[0].msg,
+    });
   }
 
   if (confirmPassword !== newPassword) {
     return res.status(422).json({
-      message: "Confirm password does not match!"
-    })
+      message: "Confirm password does not match!",
+    });
   }
 
   //insert new password into database
@@ -234,8 +248,8 @@ const postNewPasswordForm = async (req, res, next) => {
 
     if (user.rows.length === 0) {
       return res.status(400).json({
-        message: "Invalid / expired reset link"
-      })
+        message: "Invalid / expired reset link",
+      });
     }
 
     const userID = user.rows[0].id;
@@ -250,8 +264,8 @@ const postNewPasswordForm = async (req, res, next) => {
       [hashedPassword, userID],
     );
     return res.status(201).json({
-      message: "New Password Updated!"
-    })
+      message: "New Password Updated!",
+    });
   } catch (err) {
     next(err);
   }

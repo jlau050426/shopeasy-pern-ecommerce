@@ -84,7 +84,7 @@
   font-weight: 700;
 }
 
-.signup-form input {
+.signup-form input:not([type="checkbox"]) {
   box-sizing: border-box;
   width: 100%;
   min-height: 44px;

@@ -8,8 +8,10 @@ export function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [adminInvitationCode, setAdminInvitationCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -18,25 +20,26 @@ export function SignupPage() {
       const response = await apiClient.post("/sign-up", {
         email: email,
         password: password,
-        confirmPassword: confirmPassword
+        confirmPassword: confirmPassword,
+        adminInvitationCode: isAdmin? adminInvitationCode : undefined
       });
 
-      if(response.status === 201){
-        navigate("/login")
+      if (response.status === 201) {
+        navigate("/login");
       }
     } catch (error) {
       if (error.response) {
-        setErrorMessage(error.response.data?.message || "An error occured")
+        setErrorMessage(error.response.data?.message || "An error occured");
         if (error.response.data?.oldInput?.email) {
-          setEmail(error.response.data.oldInput.email)
+          setEmail(error.response.data.oldInput.email);
         }
-        setPassword('')
-        setConfirmPassword('')
-      }else{
-        setErrorMessage("Unable to Connect to Server!")
+        setPassword("");
+        setConfirmPassword("");
+      } else {
+        setErrorMessage("Unable to Connect to Server!");
       }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -98,6 +101,26 @@ export function SignupPage() {
               onChange={(event) => setConfirmPassword(event.target.value)}
               required
             />
+
+            <label>
+              <input
+                type="checkbox"
+                checked={isAdmin}
+                onChange={(e) => setIsAdmin(e.target.checked)}
+              />
+              Sign up as Admin?
+            </label>
+
+            {isAdmin && (
+              <input
+                type="text"
+                placeholder="Enter admin invitation code"
+                value={adminInvitationCode}
+                onChange={(event) => {
+                  setAdminInvitationCode(event.target.value);
+                }}
+              />
+            )}
 
             <button
               className="signup-button"
