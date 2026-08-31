@@ -52,12 +52,37 @@ export function PasswordResetPage() {
         </div>
 
         {emailMessage && (
-          <p
-            className="form-success"
-            style={{ color: "green", marginBottom: "15px" }}
-          >
-            {emailMessage}
-          </p>
+          <div className="header-success" role="alert">
+            <span className="header-success-icon" aria-hidden="true">
+              !
+            </span>
+            <span>{emailMessage}</span>
+            <button
+              className="header-success-close"
+              type="button"
+              onClick={() => setEmailMessage("")}
+              aria-label="Dismiss error"
+            >
+              &times;
+            </button>
+          </div>
+        )}
+
+        {errorMessage && (
+          <div className="header-error" role="alert">
+            <span className="header-error-icon" aria-hidden="true">
+              !
+            </span>
+            <span>{errorMessage}</span>
+            <button
+              className="header-error-close"
+              type="button"
+              onClick={() => setErrorMessage("")}
+              aria-label="Dismiss error"
+            >
+              &times;
+            </button>
+          </div>
         )}
 
         <div className="password-reset-card__content">
@@ -66,12 +91,6 @@ export function PasswordResetPage() {
           <p className="password-reset-subtitle">
             Enter your email address to continue.
           </p>
-
-          {errorMessage && (
-            <p className="form-error" role="alert">
-              {errorMessage}
-            </p>
-          )}
 
           <form className="password-reset-form" onSubmit={handleSubmit}>
             <label htmlFor="reset-email">Email address</label>

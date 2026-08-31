@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useParams} from "react-router-dom";
 import "./new-password.css";
 import apiClient from "../../services/apiClient";
 
@@ -8,8 +8,20 @@ export function NewPasswordPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [countdown, setCountdown] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const { token } = useParams();
+
+  useEffect(() => {
+    if (countdown === null || countdown <= 0) return;
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [countdown]);
 
   async function handleSubmit(event) {
     setIsLoading(true);
@@ -20,10 +32,18 @@ export function NewPasswordPage() {
         newPassword: newPassword,
         confirmPassword: confirmPassword,
       });
-      navigate("/login");
+
+      setSuccessMessage("New Password Updated Successfully!");
+      setCountdown(5);
+      setTimeout(() => {
+        navigate("/login");
+      }, 5000);
     } catch (error) {
       if (error.response) {
         setErrorMessage(error.response.data?.message || "An error occured");
+        setTimeout(() => {
+          setErrorMessage("");
+        }, 3000);
         setNewPassword("");
         setConfirmPassword("");
       } else {
@@ -66,10 +86,41 @@ export function NewPasswordPage() {
               again.
             </p>
           )}
+
           {errorMessage && (
-            <p className="form-error" role="alert">
-              {errorMessage}
-            </p>
+            <div className="header-error" role="alert">
+              <span className="header-error-icon" aria-hidden="true">
+                !
+              </span>
+              <span>{errorMessage}</span>
+              <button
+                className="header-error-close"
+                type="button"
+                onClick={() => setErrorMessage("")}
+                aria-label="Dismiss error"
+              >
+                &times;
+              </button>
+            </div>
+          )}
+
+          {successMessage && (
+            <div className="header-success" role="alert">
+              <span className="header-success-icon" aria-hidden="true">
+                !
+              </span>
+              <span>{successMessage}</span>
+              <button
+                className="header-success-close"
+                type="button"
+                onClick={() => setSuccessMessage("")}
+                aria-label="Dismiss error"
+              ></button>
+              {countdown !== null && countdown > 0 && (
+                <span> Redirecting in {countdown}...</span>
+              )}
+              &times;
+            </div>
           )}
 
           <form className="new-password-form" onSubmit={handleSubmit}>
