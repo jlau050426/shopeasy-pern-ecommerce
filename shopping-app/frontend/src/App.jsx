@@ -8,6 +8,9 @@ import { LoginPage } from "./pages/auth/LoginPage";
 import { SignupPage } from "./pages/auth/SignupPage";
 import { PasswordResetPage } from "./pages/auth/passwordResetPage";
 import { NewPasswordPage } from "./pages/auth/newPasswordPage";
+import { AddProductForm } from "./pages/admin/addProductForm";
+import { AdminProductsPage } from "./pages/admin/AdminProductsPage";
+import { EditProductForm } from "./pages/admin/editProductForm";
 import { Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
 import apiClient from "./services/apiClient";
@@ -50,6 +53,9 @@ function App() {
       <Route path="/sign-up" element={<SignupPage />} />
       <Route path="/reset-password" element={<PasswordResetPage />} />
       <Route path="/set-new-password/:token" element={<NewPasswordPage />} />
+      <Route path="/admin/products" element={<AdminProductsPage />} />
+      <Route path="/admin/edit-product/:productID" element={<EditProductForm />}/>
+      <Route path="/admin/add-product" element={<AddProductForm />} />
       <Route path="*" element={<Error404 cart={cart} />} />
     </Routes>
   );

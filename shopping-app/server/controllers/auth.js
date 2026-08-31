@@ -52,6 +52,8 @@ const postLogin = async (req, res, next) => {
       //create a session
       req.session.isLoggedIn = true;
       req.session.sessionUserID = existingUser.rows[0].id;
+      req.session.sessionUserRole = existingUser.rows[0].role
+      console.log("role: ", existingUser.rows[0].role);
       req.session.save((err) => {
         if (err) {
           console.log(err);
