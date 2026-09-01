@@ -59,7 +59,7 @@ export function AddProductForm() {
         }
       }
     }
-    validateAdminValidity()
+    validateAdminValidity();
   }, [navigate]);
 
   function handleFileSelect(event) {
@@ -217,10 +217,12 @@ export function AddProductForm() {
               <span className="header-error-icon" aria-hidden="true">
                 !
               </span>
-              <span>{errorMessage}</span>
-              {countdown !== null && countdown > 0 && (
-                <span> Redirecting in {countdown}...</span>
-              )}
+              <div className="header-error-content">
+                <span>{errorMessage}</span>
+                {countdown !== null && countdown > 0 && (
+                  <span> Redirecting in {countdown}...</span>
+                )}
+              </div>
               <button
                 className="header-error-close"
                 type="button"
@@ -237,10 +239,12 @@ export function AddProductForm() {
               <span className="header-success-icon" aria-hidden="true">
                 !
               </span>
-              <span>{successMessage}</span>
-              {countdown !== null && countdown > 0 && (
-                <span> Redirecting in {countdown}...</span>
-              )}
+              <div className="header-error-content">
+                <span>{successMessage}</span>
+                {countdown !== null && countdown > 0 && (
+                  <span> Redirecting in {countdown}...</span>
+                )}
+              </div>
               <button
                 className="header-success-close"
                 type="button"

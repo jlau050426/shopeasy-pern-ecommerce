@@ -2,77 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import "./AdminProductsPage.css";
 import apiClient from "../../services/apiClient";
-import { formatMoney } from "../../utils/money";
-
-export function AdminProductContainer({ product, onDelete }) {
-  const navigate = useNavigate();
-
-  function handleEdit() {
-    navigate(`/admin/edit-product/${product.id}`);
-  }
-
-  return (
-    <div
-      className="product-container"
-      data-testid={`admin-product-${product.id}`}
-    >
-      <div className="product-image-container">
-        <img
-          className="product-image"
-          data-testid="product-image"
-          src={`${import.meta.env.VITE_API_URL}/${product.imageurl}`}
-          alt={product.title}
-        />
-      </div>
-
-      <div className="product-name limit-text-to-2-lines" title={product.title}>
-        {product.title}
-      </div>
-
-      <div
-        className="product-name limit-text-to-2-lines"
-        title={product.description}
-      >
-        {product.description}
-      </div>
-
-      <div className="product-rating-container">
-        <img
-          className="product-rating-stars"
-          data-testid="rating-star"
-          src={`/images/ratings/rating-${(product.rating_star || 0) * 10}.png`}
-          alt={`${product.rating_star || 0} stars`}
-        />
-        <div className="product-rating-count link-primary">
-          {product.rating_count || 0}
-        </div>
-      </div>
-
-      <div className="product-price">{formatMoney(product.price)}</div>
-
-      <div className="product-spacer"></div>
-
-      <div className="admin-product-actions">
-        <button
-          type="button"
-          className="admin-edit-button"
-          onClick={handleEdit}
-          data-testid="edit-product-button"
-        >
-          ✏️ Edit
-        </button>
-        <button
-          type="button"
-          className="admin-delete-button"
-          onClick={() => onDelete(product.id, product.title)}
-          data-testid="delete-product-button"
-        >
-          🗑️ Delete
-        </button>
-      </div>
-    </div>
-  );
-}
+import { AdminProductContainer } from "./AdminProductContainer";
 
 export function AdminProductsPage() {
   const [products, setProducts] = useState([]);
@@ -85,6 +15,28 @@ export function AdminProductsPage() {
   const page = searchParams.get("page") || 1;
   const [countdown, setCountdown] = useState(null);
   const navigate = useNavigate();
+
+  //handle delete function
+  async function handleDelete(productId, productTitle) {
+    const isConfirmed = window.confirm(
+      `Are you sure you want to delete "${productTitle}"? This action cannot be undone.`,
+    );
+    if (!isConfirmed) return;
+
+    try {
+      await apiClient.delete(`/admin/delete-product/${productId}`);
+      setProducts((prevProducts) =>
+        prevProducts.filter((product) => product.id !== productId),
+      );
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      setErrorMessage(
+        error.response?.data?.message ||
+          error.response?.data?.errorMessage ||
+          "Failed to delete product. Please try again.",
+      );
+    }
+  }
 
   //countdown timer
   useEffect(() => {
@@ -122,7 +74,7 @@ export function AdminProductsPage() {
             );
             setCountdown(5);
             setTimeout(() => {
-              navigate("/admin/products");
+              navigate("/");
             }, 5000);
           }
         } else {
@@ -146,25 +98,24 @@ export function AdminProductsPage() {
       }
 
       setIsLoading(true);
+
       try {
         const response = await apiClient.get(`/?page=${page}`);
         setProducts(response.data.prods || []);
         setTotalPages(response.data.totalPages);
-        setCurrentPage(Number(response.data.currentPage) || Number(page));
-        setErrorMessage("");
+        setCurrentPage(Number(response.data.currentPage));
       } catch (error) {
-        console.error("Error fetching admin products:", error);
         if (error.response) {
-          setErrorMessage(
-            error.response.data?.message ||
-              "An error occurred while loading products.",
-          );
-          setProducts([]);
           if (error.response.status === 400) {
+            setErrorMessage(
+              error.response.data?.message ||
+                "page exceeds maximum pages, redirecting to page 1.....",
+            );
+            setCountdown(5);
             setTimeout(() => {
               setSearchParams({ page: 1 }, { replace: true });
               setErrorMessage("");
-            }, 2000);
+            }, 5000);
           }
         } else {
           setErrorMessage("Unable to connect to the server.");
@@ -183,27 +134,6 @@ export function AdminProductsPage() {
   const filteredProducts = products.filter((product) =>
     product.title?.toLowerCase().includes(search.toLowerCase()),
   );
-
-  async function handleDelete(productId, productTitle) {
-    const isConfirmed = window.confirm(
-      `Are you sure you want to delete "${productTitle}"? This action cannot be undone.`,
-    );
-    if (!isConfirmed) return;
-
-    try {
-      await apiClient.delete(`/admin/delete-product/${productId}`);
-      setProducts((prevProducts) =>
-        prevProducts.filter((product) => product.id !== productId),
-      );
-    } catch (error) {
-      console.error("Error deleting product:", error);
-      setErrorMessage(
-        error.response?.data?.message ||
-          error.response?.data?.errorMessage ||
-          "Failed to delete product. Please try again.",
-      );
-    }
-  }
 
   function renderPagination() {
     if (!totalPages || totalPages <= 1) return null;
@@ -232,8 +162,6 @@ export function AdminProductsPage() {
 
   return (
     <div className="admin-products-page">
-      <title>Admin - Manage Products | ShopEasy</title>
-
       {/* Admin Top Header */}
       <header className="admin-header">
         <div className="admin-header-left">
@@ -280,10 +208,12 @@ export function AdminProductsPage() {
           <span className="header-error-icon" aria-hidden="true">
             !
           </span>
-          <span>{errorMessage}</span>
-          {countdown !== null && countdown > 0 && (
-            <span> Redirecting in {countdown}...</span>
-          )}
+          <div className="header-error-content">
+            <span>{errorMessage}</span>
+            {countdown !== null && countdown > 0 && (
+              <span> Redirecting in {countdown}...</span>
+            )}
+          </div>
           <button
             className="header-error-close"
             type="button"
@@ -305,16 +235,18 @@ export function AdminProductsPage() {
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="admin-empty-state">
-            <div className="admin-empty-icon">📦</div>
-            <h3>No Products Found</h3>
-            <p>
-              {search
-                ? `No products match "${search}". Try another search term.`
-                : "There are currently no products available in the catalog."}
-            </p>
-            <Link to="/admin/add-product" className="admin-add-product-btn">
-              + Add First Product
-            </Link>
+            <div className="admin-empty-icon">🔍</div>
+            <h3>No Products Found in This Page</h3>
+            <h2>
+              {search && (
+                <button
+                  className="no-products-reset-button"
+                  onClick={() => setSearch("")}
+                >
+                  Clear Search
+                </button>
+              )}
+            </h2>
           </div>
         ) : (
           <>
@@ -327,11 +259,11 @@ export function AdminProductsPage() {
                 />
               ))}
             </div>
-
-            {renderPagination()}
           </>
         )}
       </main>
+
+      {renderPagination()}
     </div>
   );
 }

@@ -470,3 +470,49 @@
   cursor: pointer;
   margin-left: 8px;
 }
+
+.header-error-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Simple Pagination Styling */
+.admin-products-page .pagination {
+  display: flex;
+  justify-content: center;
+  margin: 30px 0;
+}
+
+.admin-products-page .pagination > div {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-products-page .pagination button {
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
+  background-color: #ffffff;
+  color: rgb(25, 135, 84);
+  border: 1px solid rgb(25, 135, 84);
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.admin-products-page .pagination button:hover {
+  background-color: rgb(25, 135, 84);
+  color: #ffffff;
+}
+
+.admin-products-page .pagination button.active {
+  background-color: rgb(25, 135, 84);
+  color: #ffffff;
+  cursor: default;
+  pointer-events: none;
+}

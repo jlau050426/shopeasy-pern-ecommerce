@@ -61,7 +61,9 @@ export function OrderContainer({ order, handleOrderReceived }) {
                     Track package
                   </button>
                 </Link>
-                <a href={`${API_URL}/order/${order.id}`}>INVOICE</a>
+                <br />
+                <br />
+                <a href={`${API_URL}/order/${order.id}`}>ORDER INVOICE PDF</a>
               </div>
             </Fragment>
           );

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate, useParams} from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import "./new-password.css";
 import apiClient from "../../services/apiClient";
 
@@ -109,17 +109,20 @@ export function NewPasswordPage() {
               <span className="header-success-icon" aria-hidden="true">
                 !
               </span>
-              <span>{successMessage}</span>
-              <button
-                className="header-success-close"
-                type="button"
-                onClick={() => setSuccessMessage("")}
-                aria-label="Dismiss error"
-              ></button>
-              {countdown !== null && countdown > 0 && (
-                <span> Redirecting in {countdown}...</span>
-              )}
-              &times;
+              <div className="header-error-content">
+                <span>{successMessage}</span>
+                <button
+                  className="header-success-close"
+                  type="button"
+                  onClick={() => setSuccessMessage("")}
+                  aria-label="Dismiss error"
+                >
+                  &times;
+                </button>
+                {countdown !== null && countdown > 0 && (
+                  <span> Redirecting in {countdown}...</span>
+                )}
+              </div>
             </div>
           )}
 

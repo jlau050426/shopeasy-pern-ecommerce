@@ -66,8 +66,8 @@ router.post(
   adminController.postAddProduct,
 );
 
-router.get("/add-product", isAuth, isAdmin, adminController.getAddProduct)
-router.get("/admin-page", isAuth, isAdmin, adminController.getAdminPage)
+router.get("/add-product", isAuth, isAdmin, adminController.getAddProduct);
+router.get("/admin-page", isAuth, isAdmin, adminController.getAdminPage);
 
 // /admin/edit-product ==> get
 router.get(

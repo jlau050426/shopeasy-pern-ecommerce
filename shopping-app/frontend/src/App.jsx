@@ -45,10 +45,10 @@ function App() {
     <Routes>
       {/* Route add page to website  */}
       <Route path="/" element={<HomePage cart={cart} fetchCart={fetchCart} isLoggedIn={isLoggedIn}/>}/>
-      <Route path="/product/:productID" element={<ProductDetails cart={cart} />}/>
-      <Route path="/checkout" element={<CheckoutPage cart={cart} fetchCart={fetchCart} />}/>
-      <Route path="/checkout/orders" element={<OrdersPage cart={cart} fetchCart={fetchCart} />} />
-      <Route path="/tracking" element={<TrackingPage cart={cart} />} />
+      <Route path="/product/:productID" element={<ProductDetails cart={cart} isLoggedIn={isLoggedIn}/>}/>
+      <Route path="/checkout" element={<CheckoutPage cart={cart} fetchCart={fetchCart}/>}/>
+      <Route path="/checkout/orders" element={<OrdersPage cart={cart} fetchCart={fetchCart} isLoggedIn={isLoggedIn}/>} />
+      <Route path="/tracking" element={<TrackingPage cart={cart} isLoggedIn={isLoggedIn}/>} />
       <Route path="/login" element={<LoginPage fetchCart={fetchCart}/>} />
       <Route path="/sign-up" element={<SignupPage />} />
       <Route path="/reset-password" element={<PasswordResetPage />} />
@@ -56,7 +56,7 @@ function App() {
       <Route path="/admin/products" element={<AdminProductsPage />} />
       <Route path="/admin/edit-product/:productID" element={<EditProductForm />}/>
       <Route path="/admin/add-product" element={<AddProductForm />} />
-      <Route path="*" element={<Error404 cart={cart} />} />
+      <Route path="*" element={<Error404 cart={cart} isLoggedIn={isLoggedIn}/>} />
     </Routes>
   );
 }

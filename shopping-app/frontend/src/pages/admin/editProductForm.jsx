@@ -167,7 +167,7 @@ export function EditProductForm() {
             setErrorMessage(
               error.response.data?.errorMessage || "Something Wrong",
             );
-            setCountdown(5)
+            setCountdown(5);
             setTimeout(() => {
               navigate("/admin/products");
             }, 5000);
@@ -212,10 +212,12 @@ export function EditProductForm() {
               <span className="header-error-icon" aria-hidden="true">
                 !
               </span>
-              <span>{errorMessage}</span>
-              {countdown !== null && countdown > 0 && (
-                <span> Redirecting in {countdown}...</span>
-              )}
+              <div className="header-error-content">
+                <span>{errorMessage}</span>
+                {countdown !== null && countdown > 0 && (
+                  <span> Redirecting in {countdown}...</span>
+                )}
+              </div>
               <button
                 className="header-error-close"
                 type="button"
@@ -232,10 +234,12 @@ export function EditProductForm() {
               <span className="header-success-icon" aria-hidden="true">
                 !
               </span>
-              <span>{successMessage}</span>
-              {countdown !== null && countdown > 0 && (
-                <span> Redirecting in {countdown}...</span>
-              )}
+              <div className="header-error-content">
+                <span>{successMessage}</span>
+                {countdown !== null && countdown > 0 && (
+                  <span> Redirecting in {countdown}...</span>
+                )}
+              </div>
               <button
                 className="header-success-close"
                 type="button"

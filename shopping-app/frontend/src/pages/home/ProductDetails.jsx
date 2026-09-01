@@ -4,7 +4,7 @@ import apiClient from "../../services/apiClient";
 import { Header } from "../../components/Header";
 import { formatMoney } from "../../utils/money";
 
-export function ProductDetails({ cart }) {
+export function ProductDetails({ cart, isLoggedIn }) {
   // Get productID from URL parameter (e.g. /product/:productID)
   const { productID } = useParams();
 
@@ -36,7 +36,7 @@ export function ProductDetails({ cart }) {
   return (
     <>
       <title>{product ? product.title : "Product Details"}</title>
-      <Header cart={cart} />
+      <Header cart={cart} isLoggedIn={isLoggedIn}/>
 
       <main
         style={{
