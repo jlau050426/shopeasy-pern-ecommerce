@@ -19,7 +19,7 @@ const getIndex = async (req, res, next) => {
     productsPerPage,
     async (fetchPage, totalPages, page) => {
       if (totalPages > 0 && page > totalPages) {
-        return res.status(400).json({
+        return res.status(404).json({
           message: "page exceeds maximum pages, redirecting to page 1.....",
           totalPages: totalPages,
           prods: fetchPage.rows,
@@ -52,7 +52,7 @@ const getProduct = async (req, res, next) => {
 const postCart = async (req, res, next) => {
   const productID = req.body.productId;
   const quantity = req.body.quantity || 1;
-  const sessionUserID = req.session.sessionUserID || 1;
+  const sessionUserID = req.session.sessionUserID
 
   try {
     if (!productID) {

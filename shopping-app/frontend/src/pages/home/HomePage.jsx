@@ -51,7 +51,7 @@ export function HomePage({ cart, fetchCart, isLoggedIn }) {
             error.response.data?.message || "An error has occured",
           );
           setProducts([]);
-          if (error.response.status === 400) {
+          if (error.response.status === 404) {
             setErrorMessage(
               error.response.data?.message ||
                 "page exceeds maximum pages, redirecting to page 1.....",

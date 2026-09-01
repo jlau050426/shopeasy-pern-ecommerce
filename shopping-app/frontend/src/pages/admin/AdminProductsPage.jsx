@@ -106,7 +106,7 @@ export function AdminProductsPage() {
         setCurrentPage(Number(response.data.currentPage));
       } catch (error) {
         if (error.response) {
-          if (error.response.status === 400) {
+          if (error.response.status === 404) {
             setErrorMessage(
               error.response.data?.message ||
                 "page exceeds maximum pages, redirecting to page 1.....",

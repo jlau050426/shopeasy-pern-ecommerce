@@ -94,7 +94,7 @@ app.use(errorController.error404);
 //error handling middleware
 app.use((err, req, res, next) => {
   console.log(err);
-  res.status(err.statusCode || 500).json({
+  res.status(500).json({
     message: "Internal Server Error", //just show internal server error everytime
   });
 });
