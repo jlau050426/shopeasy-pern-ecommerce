@@ -129,7 +129,6 @@ const removeProduct = async (req, res, next) => {
   try {
     const selectedProduct = await Product.findProductByID(productID);
     if (selectedProduct.rows.length === 0) {
-      req.flash("error", "Product not found");
       return res.redirect("/admin/products");
     }
     const imageURL = path.join("images", selectedProduct.rows[0].imageurl);

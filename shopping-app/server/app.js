@@ -2,10 +2,8 @@
 require("dotenv").config(); //env file imports
 const path = require("path");
 const express = require("express");
-const bodyParser = require("body-parser");
 const session = require("express-session");
 const crypto = require("crypto");
-const flash = require("connect-flash");
 
 const cors = require("cors");
 
@@ -45,9 +43,6 @@ app.post(
 //import middleware
 const verifyCsrfToken = require("./middleware/verifyCsrfToken");
 
-//bodyParser middleware
-app.use(bodyParser.urlencoded({ extended: false })); //submit url-form-data
-// JSON bodyParser
 app.use(express.json());
 
 //static file
@@ -79,9 +74,6 @@ app.use((req, res, next) => {
   next();
 });
 // app.use(verifyCsrfToken)
-
-//error flash middleware
-app.use(flash());
 
 //router middleware
 //concatenate every address behind /admin

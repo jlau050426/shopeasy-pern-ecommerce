@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useState, Fragment } from "react";
 
 export function OrderContainer({ order, handleOrderReceived }) {
-  const API_URL = import.meta.env.VITE_API_URL
+  const API_URL = import.meta.env.VITE_API_URL;
   const [currentTime] = useState(() => Date.now());
   return (
     <div key={order.id} className="order-container">
@@ -37,7 +37,8 @@ export function OrderContainer({ order, handleOrderReceived }) {
       <div className="order-details-grid">
         {/* iterate through every items in an order  */}
         {order.items.map((item) => {
-          const estimatedDeliveryTimeMs = currentTime + item.estimated_delivery_days * 24 * 60 * 60 * 1000;
+          const estimatedDeliveryTimeMs =
+            currentTime + item.estimated_delivery_days * 24 * 60 * 60 * 1000;
           return (
             <Fragment key={item.product_id}>
               <div className="product-image-container">
@@ -48,15 +49,17 @@ export function OrderContainer({ order, handleOrderReceived }) {
                 <div className="product-name">{item.title}</div>
                 <div className="product-delivery-date">
                   Arriving on:{" "}
-                  {dayjs(estimatedDeliveryTimeMs).format(
-                    "dddd, MMMM D",
-                  )}
+                  {dayjs(estimatedDeliveryTimeMs).format("dddd, MMMM D")}
                 </div>
-                <div className="product-quantity">Quantity: {item.quantity}</div>
+                <div className="product-quantity">
+                  Quantity: {item.quantity}
+                </div>
               </div>
 
               <div className="product-actions">
-                <Link to={`/tracking?orderID=${order.id}&productID=${item.product_id}`}>
+                <Link
+                  to={`/tracking?orderID=${order.id}&productID=${item.product_id}`}
+                >
                   <button className="track-package-button button-primary">
                     Track package
                   </button>
