@@ -14,23 +14,35 @@ import { EditProductForm } from "./pages/admin/editProductForm";
 import { Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
 import apiClient from "./services/apiClient";
+import { socket } from "./socket";
 
 function App() {
   //state lifted up
   //track cart quantity
   const [cart, setCart] = useState([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  //websocket initialization
+  useEffect(() => {
+    socket.on("message", (data) => {
+      console.log(data);
+    });
+
+    return () => {
+      socket.off("message");
+    };
+  }, []);
+
   async function fetchCart() {
     try {
       const response = await apiClient.get("/cart");
       setCart(response.data.cart || []);
-      setIsLoggedIn(true)
+      setIsLoggedIn(true);
     } catch (error) {
       if (error.response?.status === 401) {
-        setCart([])
-        setIsLoggedIn(false)
-        return
+        setCart([]);
+        setIsLoggedIn(false);
+        return;
       }
       console.log(error);
     }
@@ -44,19 +56,48 @@ function App() {
   return (
     <Routes>
       {/* Route add page to website  */}
-      <Route path="/" element={<HomePage cart={cart} fetchCart={fetchCart} isLoggedIn={isLoggedIn}/>}/>
-      <Route path="/product/:productID" element={<ProductDetails cart={cart} isLoggedIn={isLoggedIn}/>}/>
-      <Route path="/checkout" element={<CheckoutPage cart={cart} fetchCart={fetchCart}/>}/>
-      <Route path="/checkout/orders" element={<OrdersPage cart={cart} fetchCart={fetchCart} isLoggedIn={isLoggedIn}/>} />
-      <Route path="/tracking" element={<TrackingPage cart={cart} isLoggedIn={isLoggedIn}/>} />
-      <Route path="/login" element={<LoginPage fetchCart={fetchCart}/>} />
+      <Route
+        path="/"
+        element={
+          <HomePage cart={cart} fetchCart={fetchCart} isLoggedIn={isLoggedIn} />
+        }
+      />
+      <Route
+        path="/product/:productID"
+        element={<ProductDetails cart={cart} isLoggedIn={isLoggedIn} />}
+      />
+      <Route
+        path="/checkout"
+        element={<CheckoutPage cart={cart} fetchCart={fetchCart} />}
+      />
+      <Route
+        path="/checkout/orders"
+        element={
+          <OrdersPage
+            cart={cart}
+            fetchCart={fetchCart}
+            isLoggedIn={isLoggedIn}
+          />
+        }
+      />
+      <Route
+        path="/tracking"
+        element={<TrackingPage cart={cart} isLoggedIn={isLoggedIn} />}
+      />
+      <Route path="/login" element={<LoginPage fetchCart={fetchCart} />} />
       <Route path="/sign-up" element={<SignupPage />} />
       <Route path="/reset-password" element={<PasswordResetPage />} />
       <Route path="/set-new-password/:token" element={<NewPasswordPage />} />
       <Route path="/admin/products" element={<AdminProductsPage />} />
-      <Route path="/admin/edit-product/:productID" element={<EditProductForm />}/>
+      <Route
+        path="/admin/edit-product/:productID"
+        element={<EditProductForm />}
+      />
       <Route path="/admin/add-product" element={<AddProductForm />} />
-      <Route path="*" element={<Error404 cart={cart} isLoggedIn={isLoggedIn}/>} />
+      <Route
+        path="*"
+        element={<Error404 cart={cart} isLoggedIn={isLoggedIn} />}
+      />
     </Routes>
   );
 }
