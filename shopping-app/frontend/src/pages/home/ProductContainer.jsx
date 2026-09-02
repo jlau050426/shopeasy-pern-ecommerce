@@ -7,6 +7,7 @@ export function ProductContainer({ product, fetchCart }) {
   const navigate = useNavigate();
 
   const [productQuantity, setProductQuantity] = useState(1);
+  const [cartAddedMessage, setCartAddedMessage] = useState("");
 
   //navigate to cart detail function
   function CartDetail(productID) {
@@ -17,16 +18,25 @@ export function ProductContainer({ product, fetchCart }) {
   async function AddToCart() {
     //make request from backend
     try {
-      await apiClient.post("/cart", {
+      const response = await apiClient.post("/cart", {
         productId: product.id,
         quantity: productQuantity,
       });
+      setCartAddedMessage(response.data?.message || "Cart Added Successfully");
+      setTimeout(() => {
+        setCartAddedMessage("");
+      }, 3000);
       await fetchCart();
     } catch (error) {
-      if (error.response?.status === 401) {
-        navigate("/login");
+      if (error.response) {
+        if (error.response.status === 401) {
+          navigate("/login");
+        } else {
+          setCartAddedMessage(error.response.data?.message || "Product ID is required")
+        }
+      } else {
+        setCartAddedMessage("Unable to Connect to Server!")
       }
-      console.log(error);
     }
   }
 
@@ -98,6 +108,23 @@ export function ProductContainer({ product, fetchCart }) {
       >
         Add to Cart
       </button>
+
+      {cartAddedMessage && (
+        <div className="header-success" role="alert">
+          <span className="header-success-icon" aria-hidden="true">
+            !
+          </span>
+          <span>{cartAddedMessage}</span>
+          <button
+            className="header-success-close"
+            type="button"
+            onClick={() => setCartAddedMessage("")}
+            aria-label="Dismiss error"
+          >
+            &times;
+          </button>
+        </div>
+      )}
     </div>
   );
 }

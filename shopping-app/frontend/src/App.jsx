@@ -22,17 +22,6 @@ function App() {
   const [cart, setCart] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  //websocket initialization
-  useEffect(() => {
-    socket.on("message", (data) => {
-      console.log(data);
-    });
-
-    return () => {
-      socket.off("message");
-    };
-  }, []);
-
   async function fetchCart() {
     try {
       const response = await apiClient.get("/cart");
@@ -44,13 +33,23 @@ function App() {
         setIsLoggedIn(false);
         return;
       }
-      console.log(error);
     }
   }
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCart();
+  }, []);
+
+  //websocket initialization
+  useEffect(() => {
+    socket.on("cart-updated", () => {
+      fetchCart();
+    });
+
+    return () => {
+      socket.off("cart-updated")
+    }
   }, []);
 
   return (

@@ -112,6 +112,8 @@ io.on("connection", (socket) => {
   });
 });
 
+app.set("io", io);
+
 //start the app
 server.listen(PORT, () => {
   console.log("Server listen on PORT", PORT);

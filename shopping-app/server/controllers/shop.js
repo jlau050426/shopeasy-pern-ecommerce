@@ -53,6 +53,7 @@ const postCart = async (req, res, next) => {
   const productID = req.body.productId;
   const quantity = req.body.quantity || 1;
   const sessionUserID = req.session.sessionUserID
+  const io = req.app.get("io")
 
   try {
     if (!productID) {
@@ -61,10 +62,13 @@ const postCart = async (req, res, next) => {
 
     await Cart.addCart(productID, quantity, sessionUserID);
 
+    io.emit("cart-updated")
+
     //return JSON information
     return res.status(200).json({
-      message: "Product Added Successfully",
+      message: "Cart Added Successfully",
     });
+
   } catch (err) {
     next(err);
   }
