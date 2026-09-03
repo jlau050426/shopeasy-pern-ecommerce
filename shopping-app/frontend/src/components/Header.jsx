@@ -4,6 +4,7 @@ import { cartQuantity } from "../utils/cartQuantity";
 import apiClient from "../services/apiClient";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { socket } from "../socket";
 
 export function Header({
   cart = [],
@@ -16,6 +17,19 @@ export function Header({
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
+
+  //socket logout function
+  useEffect(() => {
+    function handleSocketLogout(){
+      handleLogout()
+    }
+
+    socket.on("logout", handleSocketLogout)
+    
+    return () => {
+      socket.off("logout", handleSocketLogout)
+    }
+  })
 
   async function handleLogout() {
     try {

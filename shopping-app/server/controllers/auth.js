@@ -79,6 +79,7 @@ const postLogin = async (req, res, next) => {
 };
 
 const postLogout = (req, res, next) => {
+  const io = req.app.get("io")
   req.session.destroy((err) => {
     //error occured!
     if (err) {
@@ -89,6 +90,7 @@ const postLogout = (req, res, next) => {
     }
     //log out successfully
     res.clearCookie("connect.sid");
+    io.emit("logout")
     return res.status(200).json({
       message: "Successfully Log Out",
     });
