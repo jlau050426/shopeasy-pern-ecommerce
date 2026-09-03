@@ -1,8 +1,9 @@
 import dayjs from "dayjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { formatMoney } from "../../utils/money";
 import apiClient from "../../services/apiClient";
 import { useNavigate } from "react-router-dom";
+import { socket } from "../../socket";
 
 export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
   const navigate = useNavigate();
@@ -19,6 +20,17 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
       setErrorMessage("Fail to Delete Cart!");
     }
   }
+
+  //socket function
+  useEffect(() => {
+    function handleDeliveryOptionUpdater() {
+      fetchCart();
+    }
+    socket.on("delivery-option-updated", handleDeliveryOptionUpdater);
+    return () => {
+      socket.off("delivery-option-updated", handleDeliveryOptionUpdater);
+    };
+  }, [fetchCart]);
 
   return (
     <div className="order-summary">

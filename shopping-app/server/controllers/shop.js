@@ -117,9 +117,11 @@ const updateCartDeliveryOption = async (req, res, next) => {
   const cartId = req.params.id;
   const deliveryOptionId = req.body.deliveryOptionId;
   const userId = req.session.sessionUserID;
+  const io = req.app.get("io")
 
   try {
     await Cart.updateCartDeliveryOptions(deliveryOptionId, cartId, userId);
+    io.emit("delivery-option-updated")
     res.status(204).send();
   } catch (err) {
     next(err);
