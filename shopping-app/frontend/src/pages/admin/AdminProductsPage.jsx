@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import "./AdminProductsPage.css";
 import apiClient from "../../services/apiClient";
 import { AdminProductContainer } from "./AdminProductContainer";
+import { socket } from "../../socket";
 
 export function AdminProductsPage() {
   const [products, setProducts] = useState([]);
@@ -14,6 +15,7 @@ export function AdminProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const page = searchParams.get("page") || 1;
   const [countdown, setCountdown] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0)
   const navigate = useNavigate();
 
   //handle delete function
@@ -49,6 +51,7 @@ export function AdminProductsPage() {
     return () => clearInterval(timer);
   }, [countdown]);
 
+  //check admin validity
   useEffect(() => {
     //while on edit page already validated through pre-fetch product details
     async function validateAdminValidity() {
@@ -85,6 +88,7 @@ export function AdminProductsPage() {
     validateAdminValidity();
   }, [navigate]);
 
+  //fetch all products
   useEffect(() => {
     async function fetchProducts() {
       if (!Number.isInteger(Number(page)) || Number(page) < 1) {
@@ -128,7 +132,24 @@ export function AdminProductsPage() {
     }
 
     fetchProducts();
-  }, [page, setSearchParams]);
+  }, [page, setSearchParams, refreshKey]);
+
+  //socket listeners
+  useEffect(() => {
+    function handleProductUpdate() {
+      setRefreshKey((refreshKey) => refreshKey + 1)
+    }
+
+    socket.on("admin-product-removed", handleProductUpdate);
+    socket.on("admin-product-added", handleProductUpdate)
+    socket.on("admin-product-edited", handleProductUpdate)
+
+    return () => {
+      socket.off("admin-product-removed", handleProductUpdate);
+      socket.off("admin-product-added", handleProductUpdate)
+      socket.off("admin-product-edited", handleProductUpdate)
+    };
+  }, []);
 
   // Real-time search filter
   const filteredProducts = products.filter((product) =>
