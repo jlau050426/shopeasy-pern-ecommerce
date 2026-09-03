@@ -2,12 +2,24 @@ import dayjs from "dayjs";
 import { useState } from "react";
 import { formatMoney } from "../../utils/money";
 import apiClient from "../../services/apiClient";
-import { deleteCartItem } from "../../utils/deleteCartItem";
 import { useNavigate } from "react-router-dom";
 
 export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
   const navigate = useNavigate();
   const [currentTime] = useState(() => Date.now());
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  async function deleteCartItem(cartItem) {
+    try {
+      await apiClient.delete(`/cart-delete-item/${cartItem.id}`);
+      setSuccessMessage("Cart Deleted!");
+    } catch (error) {
+      console.log(error);
+      setErrorMessage("Fail to Delete Cart!");
+    }
+  }
+
   return (
     <div className="order-summary">
       {deliveryOptions.length > 0 &&
@@ -30,7 +42,10 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
               </div>
 
               <div className="cart-item-details-grid">
-                <img className="product-image" src={`${import.meta.env.VITE_API_URL}/${cartItem.imageurl}`} />
+                <img
+                  className="product-image"
+                  src={`${import.meta.env.VITE_API_URL}/${cartItem.imageurl}`}
+                />
 
                 <div className="cart-item-details">
                   <div className="product-name">{cartItem.title}</div>
@@ -46,7 +61,7 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
                     </span>
                     <span
                       className="delete-quantity-link link-primary"
-                      onClick={() => deleteCartItem(cartItem, fetchCart)}
+                      onClick={() => deleteCartItem(cartItem)}
                     >
                       Delete
                     </span>
@@ -118,6 +133,40 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
             </div>
           );
         })}
+
+      {successMessage && (
+        <div className="header-success" role="alert">
+          <span className="header-success-icon" aria-hidden="true">
+            !
+          </span>
+          <span>{successMessage}</span>
+          <button
+            className="header-success-close"
+            type="button"
+            onClick={() => setSuccessMessage("")}
+            aria-label="Dismiss error"
+          >
+            &times;
+          </button>
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className="header-error" role="alert">
+          <span className="header-error-icon" aria-hidden="true">
+            !
+          </span>
+          <span>{errorMessage}</span>
+          <button
+            className="header-error-close"
+            type="button"
+            onClick={() => setErrorMessage("")}
+            aria-label="Dismiss error"
+          >
+            &times;
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -69,7 +69,7 @@ const getAddProduct = (req, res, next) => {
   try {
     return res.status(200).json();
   } catch (err) {
-    next(err)
+    next(err);
   }
 };
 
@@ -77,7 +77,7 @@ const getAdminPage = (req, res, next) => {
   try {
     return res.status(200).json();
   } catch (err) {
-    next(err)
+    next(err);
   }
 };
 
@@ -147,7 +147,7 @@ const removeProduct = async (req, res, next) => {
   }
 };
 
-exports.getAdminPage = getAdminPage
+exports.getAdminPage = getAdminPage;
 exports.getAddProduct = getAddProduct;
 exports.postAddProduct = postAddProduct;
 exports.getEditProduct = getEditProduct;

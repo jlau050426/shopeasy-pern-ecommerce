@@ -69,7 +69,9 @@ export function OrdersPage({ cart, fetchCart, isLoggedIn }) {
             );
           })}
         </div>
-        <div>Total Order Price: {totalOrderPrice}</div>
+        <br />
+        <br />
+        <div className="order-header-label">Total Order Price: {totalOrderPrice}</div>
       </div>
     </>
   );

@@ -129,8 +129,10 @@ const updateCartDeliveryOption = async (req, res, next) => {
 const removeCart = async (req, res, next) => {
   const currentCartID = req.params.id;
   const userID = req.session.sessionUserID;
+  const io = req.app.get("io")
   try {
     await Cart.deleteCart(currentCartID, userID);
+    io.emit("cart-deleted")
     res.status(204).send();
   } catch (err) {
     next(err);

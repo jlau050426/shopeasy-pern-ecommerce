@@ -43,9 +43,11 @@ function App() {
 
   //websocket initialization
   useEffect(() => {
-    socket.on("cart-updated", () => {
-      fetchCart();
-    });
+    function onCartUpdated(){
+      fetchCart()
+    }
+    socket.on("cart-updated", onCartUpdated);
+    socket.on("cart-deleted", onCartUpdated)
 
     return () => {
       socket.off("cart-updated")
