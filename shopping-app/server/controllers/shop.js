@@ -62,7 +62,7 @@ const postCart = async (req, res, next) => {
 
     await Cart.addCart(productID, quantity, sessionUserID);
 
-    io.emit("cart-updated")
+    io.to(`user-${sessionUserID}`).emit("cart-updated")
 
     //return JSON information
     return res.status(200).json({
@@ -76,6 +76,7 @@ const postCart = async (req, res, next) => {
 
 const getCart = async (req, res, next) => {
   const sessionUserID = req.session.sessionUserID;
+  console.log("user id: ", sessionUserID);
   try {
     const result = await Cart.fetchAllCart(sessionUserID);
     let cartTotal = 0;
@@ -116,12 +117,12 @@ const getAvailableDeliveryOptionsDetails = async (req, res, next) => {
 const updateCartDeliveryOption = async (req, res, next) => {
   const cartId = req.params.id;
   const deliveryOptionId = req.body.deliveryOptionId;
-  const userId = req.session.sessionUserID;
+  const sessionUserID = req.session.sessionUserID;
   const io = req.app.get("io")
 
   try {
-    await Cart.updateCartDeliveryOptions(deliveryOptionId, cartId, userId);
-    io.emit("delivery-option-updated")
+    await Cart.updateCartDeliveryOptions(deliveryOptionId, cartId, sessionUserID);
+    io.to(`user-${sessionUserID}`).emit("delivery-option-updated")
     res.status(204).send();
   } catch (err) {
     next(err);
@@ -130,11 +131,11 @@ const updateCartDeliveryOption = async (req, res, next) => {
 
 const removeCart = async (req, res, next) => {
   const currentCartID = req.params.id;
-  const userID = req.session.sessionUserID;
+  const sessionUserID = req.session.sessionUserID;
   const io = req.app.get("io")
   try {
-    await Cart.deleteCart(currentCartID, userID);
-    io.emit("cart-deleted")
+    await Cart.deleteCart(currentCartID, sessionUserID);
+    io.to(`user-${sessionUserID}`).emit("cart-deleted")
     res.status(204).send();
   } catch (err) {
     next(err);
@@ -372,7 +373,7 @@ const removeOrder = async (req, res, next) => {
 
 const getInvoice = async (req, res, next) => {
   //get user id
-  const userID = req.session.sessionUserID;
+  const sessionUserID = req.session.sessionUserID;
 
   //get order id
   const orderID = req.params.orderID;
@@ -386,7 +387,7 @@ const getInvoice = async (req, res, next) => {
 
   //getOrdersByID
   try {
-    const ordersByID = await Orders.fetchOrdersByID(userID, orderID);
+    const ordersByID = await Orders.fetchOrdersByID(sessionUserID, orderID);
     if (ordersByID.rows.length === 0) {
       const err = new Error("Order Not Found");
       err.statusCode = 404;

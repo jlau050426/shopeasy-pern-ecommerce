@@ -50,7 +50,8 @@ function App() {
     socket.on("cart-deleted", onCartUpdated)
 
     return () => {
-      socket.off("cart-updated")
+      socket.off("cart-updated", onCartUpdated)
+      socket.off("cart-deleted", onCartUpdated)
     }
   }, []);
 

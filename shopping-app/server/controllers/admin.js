@@ -9,6 +9,8 @@ const postAddProduct = async (req, res, next) => {
   const title = req.body.title;
   const image = req.file;
   const io = req.app.get("io");
+  const sessionUserID = req.session.sessionUserID
+  
 
   if (!image) {
     return res.status(400).json({
@@ -32,7 +34,7 @@ const postAddProduct = async (req, res, next) => {
   try {
     const newProduct = new Product(title, imageURL, price, description);
     await newProduct.save();
-    io.emit("admin-product-added");
+    io.emit("admin-product-added"); //broadcast to everyone
     res.status(201).json({
       successMessage: "Product Added Successfully!",
     });
@@ -89,6 +91,7 @@ const postEditProduct = async (req, res, next) => {
   const image = req.file;
   const price = req.body.price;
   const description = req.body.description;
+  const sessionUserID = req.session.sessionUserID
   const io = req.app.get("io");
   const errors = validationResult(req);
   //catch error
@@ -118,7 +121,7 @@ const postEditProduct = async (req, res, next) => {
 
     const updatedProduct = new Product(title, imageURL, price, description);
     await Product.editProduct(id, updatedProduct);
-    io.emit("admin-product-edited")
+    io.emit("admin-product-edited") //broadcast to everyone
     return res.status(200).json({
       successMessage: "Product Updated Successfully!",
     });
@@ -129,6 +132,7 @@ const postEditProduct = async (req, res, next) => {
 
 const removeProduct = async (req, res, next) => {
   const productID = req.params.productID;
+  const sessionUserID = req.session.sessionUserID
   const io = req.app.get("io");
   //remove product
   try {
@@ -139,7 +143,7 @@ const removeProduct = async (req, res, next) => {
     const imageURL = path.join("images", selectedProduct.rows[0].imageurl);
     await Product.deleteProduct(productID);
     await fileOperator.removeImage(imageURL, next); // remove image after database execution complete
-    io.emit("admin-product-removed");
+    io.emit("admin-product-removed"); //broadcast to everyone
     res.status(200).json({
       message: "success!",
     });

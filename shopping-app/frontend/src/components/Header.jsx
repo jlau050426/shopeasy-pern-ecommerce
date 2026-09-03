@@ -21,7 +21,9 @@ export function Header({
   //socket logout function
   useEffect(() => {
     function handleSocketLogout(){
-      handleLogout()
+      socket.disconnect().connect()
+      setIsAdmin(false)
+      navigate("/login")
     }
 
     socket.on("logout", handleSocketLogout)
@@ -29,11 +31,13 @@ export function Header({
     return () => {
       socket.off("logout", handleSocketLogout)
     }
-  })
+  }, [navigate])
 
   async function handleLogout() {
     try {
       await apiClient.post("/logout");
+      //ask for socket rehandshake
+      socket.disconnect().connect()
       navigate("/login");
     } catch (error) {
       console.log(error);

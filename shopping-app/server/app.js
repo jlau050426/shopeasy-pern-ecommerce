@@ -55,18 +55,18 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "images")));
 
 //initiating session
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true, // Prevents XSS` script access to session cookie
-      sameSite: "lax", // Layer 1 CSRF Protection: Protects against cross-site POST requests
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
-    },
-  }),
-);
+const sessionMiddleware = session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true, // Prevents XSS` script access to session cookie
+    sameSite: "lax", // Layer 1 CSRF Protection: Protects against cross-site POST requests
+    maxAge: 1000 * 60 * 60 * 24, // 1 day
+  },
+});
+
+app.use(sessionMiddleware);
 
 //assign tokens for every sessions
 //res.locals.csrfToken is used to pass the token to the views
@@ -105,8 +105,31 @@ const io = new Server(server, {
   },
 });
 
+//let socket.io server to share the same session
+io.engine.use(sessionMiddleware);
+
 io.on("connection", (socket) => {
-  console.log("User connected");
+  const sessionUserID = socket.request.session.sessionUserID;
+  const userRole = socket.request.session.sessionUserRole;
+  console.log("");
+  console.log("--------------socket information --------------");
+
+  if (!sessionUserID) {
+    console.log("User as GUEST");
+    return;
+  } else if (userRole === "ADMIN") {
+    console.log("User as ADMIN");
+    console.log(`Admin ${sessionUserID} role ${userRole} connected`);
+    socket.join(`user-${sessionUserID}`); //admin will join two different room
+    socket.join(`admin-${sessionUserID}`);
+    console.log(`Admin ${sessionUserID} join room admin-${sessionUserID}`);
+  } else {
+    console.log("User as USER");
+    console.log(`User ${sessionUserID} role ${userRole} connected`);
+    socket.join(`user-${sessionUserID}`);
+    console.log(`User ${sessionUserID} join room user-${sessionUserID}`);
+  }
+
   socket.on("disconnect", () => {
     console.log("User disconnected");
   });
