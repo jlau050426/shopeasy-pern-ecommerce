@@ -26,9 +26,9 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
     function handleDeliveryOptionUpdater() {
       fetchCart();
     }
-    socket.on("delivery-option-updated", handleDeliveryOptionUpdater);
+    socket.on("cart:delivery-updated", handleDeliveryOptionUpdater);
     return () => {
-      socket.off("delivery-option-updated", handleDeliveryOptionUpdater);
+      socket.off("cart:delivery-updated", handleDeliveryOptionUpdater);
     };
   }, [fetchCart]);
 

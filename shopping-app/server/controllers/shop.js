@@ -8,10 +8,10 @@ const fs = require("fs");
 const PDFDocument = require("pdfkit");
 const stripe = require("../util/stripe-payment.js");
 const { pagination } = require("../util/pagination.js");
-const db = require("../util/database.js");
+const orderTransactionService = require("../services/orderService.js");
 
 const getIndex = async (req, res, next) => {
-  const productsPerPage = 2;
+  const productsPerPage = 50;
 
   await pagination(
     req,
@@ -52,8 +52,8 @@ const getProduct = async (req, res, next) => {
 const postCart = async (req, res, next) => {
   const productID = req.body.productId;
   const quantity = req.body.quantity || 1;
-  const sessionUserID = req.session.sessionUserID
-  const io = req.app.get("io")
+  const sessionUserID = req.session.sessionUserID;
+  const io = req.app.get("io");
 
   try {
     if (!productID) {
@@ -62,13 +62,12 @@ const postCart = async (req, res, next) => {
 
     await Cart.addCart(productID, quantity, sessionUserID);
 
-    io.to(`user-${sessionUserID}`).emit("cart-updated")
+    io.to(`user-${sessionUserID}`).emit("cart:updated");
 
     //return JSON information
     return res.status(200).json({
       message: "Cart Added Successfully",
     });
-
   } catch (err) {
     next(err);
   }
@@ -76,7 +75,6 @@ const postCart = async (req, res, next) => {
 
 const getCart = async (req, res, next) => {
   const sessionUserID = req.session.sessionUserID;
-  console.log("user id: ", sessionUserID);
   try {
     const result = await Cart.fetchAllCart(sessionUserID);
     let cartTotal = 0;
@@ -118,11 +116,15 @@ const updateCartDeliveryOption = async (req, res, next) => {
   const cartId = req.params.id;
   const deliveryOptionId = req.body.deliveryOptionId;
   const sessionUserID = req.session.sessionUserID;
-  const io = req.app.get("io")
+  const io = req.app.get("io");
 
   try {
-    await Cart.updateCartDeliveryOptions(deliveryOptionId, cartId, sessionUserID);
-    io.to(`user-${sessionUserID}`).emit("delivery-option-updated")
+    await Cart.updateCartDeliveryOptions(
+      deliveryOptionId,
+      cartId,
+      sessionUserID,
+    );
+    io.to(`user-${sessionUserID}`).emit("cart:delivery-updated");
     res.status(204).send();
   } catch (err) {
     next(err);
@@ -132,10 +134,10 @@ const updateCartDeliveryOption = async (req, res, next) => {
 const removeCart = async (req, res, next) => {
   const currentCartID = req.params.id;
   const sessionUserID = req.session.sessionUserID;
-  const io = req.app.get("io")
+  const io = req.app.get("io");
   try {
     await Cart.deleteCart(currentCartID, sessionUserID);
-    io.to(`user-${sessionUserID}`).emit("cart-deleted")
+    io.to(`user-${sessionUserID}`).emit("cart:deleted");
     res.status(204).send();
   } catch (err) {
     next(err);
@@ -274,8 +276,6 @@ const postCheckout = async (req, res, next) => {
 
 //stripe webhook handler
 const stripeWebhook = async (req, res, next) => {
-  //get current time
-  const currentTime = Date.now();
   let event;
   // Get the signature sent by Stripe
   const signature = req.headers["stripe-signature"];
@@ -298,59 +298,13 @@ const stripeWebhook = async (req, res, next) => {
       const sessionUserID = session.metadata.user_id;
       const stripeSessionID = session.id;
 
-      //borrow a connection from database for full transaction query
-      const client = await db.connect();
-
-      //create order
       try {
-        //implement postgre transactions function to prevent data lost
-        await client.query("BEGIN");
-
-        //chcek unique stripe id
-        const uniqueStripeSessionID =
-          await Orders.checkUniqueStripeID(stripeSessionID);
-
-        if (uniqueStripeSessionID.rows.length > 0) {
-          await client.query("COMMIT");
-          return res.sendStatus(200);
-        }
-
-        // unique id
-        //add order into orders table
-        const addOrders = await Orders.addOrders(
-          sessionUserID,
-          stripeSessionID,
-        );
-
-        //fetching cart information to be insert into order_items table
-        const cart = await Cart.fetchAllCart(sessionUserID);
-        const orderID = addOrders.rows[0].id;
-        for (const item of cart.rows) {
-          const productID = item.product_id;
-          const quantity = item.quantity;
-          const price = item.price;
-          // delivery_days in set in DEFAULT of 7 days in database
-          const dateReceiveMs =
-            currentTime + Number(item.delivery_days) * 24 * 60 * 60 * 1000;
-          await Orders.postOrderItems(
-            orderID,
-            productID,
-            quantity,
-            price,
-            dateReceiveMs,
-            sessionUserID,
-          );
-        }
-        //remove cart after ordering
-        await Cart.deleteOrderedCart(sessionUserID);
-        await client.query("COMMIT");
-        return res.sendStatus(200);
+        await orderTransactionService(sessionUserID, stripeSessionID);
+        return res.status(200);
       } catch (err) {
-        await client.query("ROLLBACK");
-        return next(err);
-      } finally {
-        client.release(); //prevent connection exhaustion
+        next(err);
       }
+
     default:
       console.log(`Unhandled event type ${event.type}`);
   }

@@ -91,7 +91,7 @@ const postLogout = (req, res, next) => {
     }
     //log out successfully
     res.clearCookie("connect.sid");
-    io.to(`user-${sessionUserID}`).emit("logout")
+    io.to(`user-${sessionUserID}`).emit("auth:logout")
     return res.status(200).json({
       message: "Successfully Log Out",
     });

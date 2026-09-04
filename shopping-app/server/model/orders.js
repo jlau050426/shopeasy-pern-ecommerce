@@ -1,43 +1,6 @@
 const db = require("../util/database");
 
 class Orders {
-  static async addOrders(sessionUserID, stripeSessionID) {
-    return db.query(
-      `
-                INSERT INTO orders (user_id, stripe_session_id)
-                VALUES ($1, $2)
-                RETURNING id
-                `,
-      [sessionUserID, stripeSessionID],
-    );
-  }
-
-  static async checkUniqueStripeID(stripeSessionID) {
-    return db.query(
-      `
-                SELECT * FROM orders WHERE stripe_session_id = $1
-                `,
-      [stripeSessionID],
-    );
-  }
-
-  static async postOrderItems(
-    orderID,
-    productID,
-    quantity,
-    price,
-    dateReceiveMs,
-    sessionUserID,
-  ) {
-    return db.query(
-      `INSERT INTO order_items
-      (order_id, product_id, quantity, price, date_receive_ms, user_id)
-      VALUES 
-      ($1, $2, $3, $4, $5, $6)`,
-      [orderID, productID, quantity, price, dateReceiveMs, sessionUserID],
-    );
-  }
-
   static fetchAllOrders(sessionUserID) {
     return db.query(
       `

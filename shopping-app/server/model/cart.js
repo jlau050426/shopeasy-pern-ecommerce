@@ -59,10 +59,6 @@ class Cart {
       [deliveryOptions, cartID, sessionUserID],
     );
   }
-
-  static async deleteOrderedCart(sessionUserID) {
-    return db.query(`DELETE FROM cart WHERE user_id = $1`, [sessionUserID]);
-  }
 }
 
 module.exports = Cart;

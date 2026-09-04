@@ -46,12 +46,12 @@ function App() {
     function onCartUpdated(){
       fetchCart()
     }
-    socket.on("cart-updated", onCartUpdated);
-    socket.on("cart-deleted", onCartUpdated)
+    socket.on("cart:updated", onCartUpdated);
+    socket.on("cart:deleted", onCartUpdated)
 
     return () => {
-      socket.off("cart-updated", onCartUpdated)
-      socket.off("cart-deleted", onCartUpdated)
+      socket.off("cart:updated", onCartUpdated)
+      socket.off("cart:deleted", onCartUpdated)
     }
   }, []);
 

@@ -26,10 +26,10 @@ export function Header({
       navigate("/login");
     }
 
-    socket.on("logout", handleSocketLogout);
+    socket.on("auth:logout", handleSocketLogout);
 
     return () => {
-      socket.off("logout", handleSocketLogout);
+      socket.off("auth:logout", handleSocketLogout);
     };
   }, [navigate]);
 
