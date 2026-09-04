@@ -106,7 +106,7 @@ const postSignUp = async (req, res, next) => {
 
   let role = "USER";
   if (adminPasskey) {
-    if (adminPasskey === "secret-passkey") {
+    if (adminPasskey === process.env.ADMIN_PASSKEY) {
       role = "ADMIN";
     }else{
       return res.status(422).json({

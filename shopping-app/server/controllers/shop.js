@@ -239,12 +239,14 @@ const postCheckout = async (req, res, next) => {
       throw err;
     }
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
+    const line_items = [];
+    let grandTotal = 0;
+    let shippingCostTotal = 0;
 
-      payment_method_types: ["card"],
-
-      line_items: cart.map((c) => ({
+    cart.forEach((c) => {
+      grandTotal += Number(c.price) * Number(c.quantity);
+      shippingCostTotal += Number(c.price_dollars);
+      line_items.push({
         price_data: {
           currency: "myr",
 
@@ -256,7 +258,48 @@ const postCheckout = async (req, res, next) => {
           unit_amount: Math.round(Number(c.price) * 100),
         },
         quantity: c.quantity,
-      })),
+      });
+
+      line_items.push({
+        price_data: {
+          currency: "myr",
+
+          product_data: {
+            name: "Shipping",
+          },
+
+          //product price in cents
+          unit_amount: Math.round(Number(c.price_dollars) * 100),
+        },
+        quantity: 1,
+      });
+    });
+
+    const totalCost = grandTotal + shippingCostTotal;
+    const tax = (totalCost * 0.1).toFixed(2);
+
+    line_items.push({
+      price_data: {
+        currency: "myr",
+
+        product_data: {
+          name: "Tax (10%)",
+        },
+
+        //product price in cents
+        unit_amount: Math.round(Number(tax) * 100),
+      },
+      quantity: 1,
+    });
+
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+
+      line_items,
+
+      
+
+      payment_method_types: ["card"],
 
       metadata: {
         user_id: sessionUserID.toString(),
@@ -300,7 +343,7 @@ const stripeWebhook = async (req, res, next) => {
 
       try {
         await orderTransactionService(sessionUserID, stripeSessionID);
-        return res.status(200);
+        return res.sendStatus(200);
       } catch (err) {
         next(err);
       }
