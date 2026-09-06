@@ -13,10 +13,15 @@ import { AdminProductsPage } from "./pages/admin/AdminProductsPage";
 import { EditProductForm } from "./pages/admin/editProductForm";
 import { Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
-import apiClient from "./services/apiClient";
+import apiClient, { initializeCsrf } from "./services/apiClient";
 import { socket } from "./socket";
 
 function App() {
+  //generate csrf token before starting everything
+  useEffect(() => {
+    initializeCsrf()
+  }, []);
+
   //state lifted up
   //track cart quantity
   const [cart, setCart] = useState([]);
@@ -43,16 +48,16 @@ function App() {
 
   //websocket initialization
   useEffect(() => {
-    function onCartUpdated(){
-      fetchCart()
+    function onCartUpdated() {
+      fetchCart();
     }
     socket.on("cart:updated", onCartUpdated);
-    socket.on("cart:deleted", onCartUpdated)
+    socket.on("cart:deleted", onCartUpdated);
 
     return () => {
-      socket.off("cart:updated", onCartUpdated)
-      socket.off("cart:deleted", onCartUpdated)
-    }
+      socket.off("cart:updated", onCartUpdated);
+      socket.off("cart:deleted", onCartUpdated);
+    };
   }, []);
 
   return (

@@ -3,29 +3,9 @@ require("dotenv").config(); //env file imports
 const path = require("path");
 const express = require("express");
 const session = require("express-session");
-const crypto = require("crypto");
 const { Server } = require("socket.io");
 const http = require("node:http");
-
 const cors = require("cors");
-
-//initialise express app
-const app = express();
-
-const server = http.createServer(app);
-
-//initialise port
-const PORT = process.env.PORT;
-
-//CORS header
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "csrf-token"],
-  }),
-);
 
 //imports route
 const adminRoute = require("./routes/admin");
@@ -38,6 +18,16 @@ const errorController = require("./controllers/error");
 //import shopController for webhook
 const shopController = require("./controllers/shop");
 
+//import middleware
+const verifyCsrfToken = require("./middleware/verifyCsrfToken");
+
+//initialise express app
+const app = express();
+//create a server that held express app
+const server = http.createServer(app);
+//initialise port
+const PORT = process.env.PORT;
+
 //stripe webhook require raw request body, need to define before express.json
 app.post(
   "/stripe-webhook",
@@ -45,8 +35,15 @@ app.post(
   shopController.stripeWebhook,
 );
 
-//import middleware
-const verifyCsrfToken = require("./middleware/verifyCsrfToken");
+//CORS header
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-csrf-token"],
+  }),
+);
 
 app.use(express.json());
 
@@ -68,17 +65,17 @@ const sessionMiddleware = session({
 
 app.use(sessionMiddleware);
 
+// THIS IS EJS APPROACH React do not have res.loacls approach
 //assign tokens for every sessions
 //res.locals.csrfToken is used to pass the token to the views
-app.use((req, res, next) => {
-  if (req.session && !req.session.csrfToken) {
-    req.session.csrfToken = crypto.randomBytes(32).toString("hex");
-  }
-  res.locals.isAuthenticated = req.session.isLoggedIn || false;
-  res.locals.csrfToken = req.session.csrfToken || null; // res.locals.csrfToken is req.session.csrfToken is token is initialized
-  next();
-});
-// app.use(verifyCsrfToken)
+// app.use((req, res, next) => {
+//   if (req.session && !req.session.csrfToken) {
+//     req.session.csrfToken = crypto.randomBytes(32).toString("hex"); //csrf token generation
+//   }
+//   res.locals.isAuthenticated = req.session.isLoggedIn || false;
+//   res.locals.csrfToken = req.session.csrfToken || null; // res.locals.csrfToken is req.session.csrfToken is token is initialized
+//   next();
+// });
 
 //router middleware
 //concatenate every address behind /admin
@@ -90,7 +87,6 @@ app.use(errorController.error404);
 
 //error handling middleware
 app.use((err, req, res, next) => {
-  console.log(err);
   res.status(500).json({
     message: "Internal Server Error", //just show internal server error everytime
   });
@@ -98,10 +94,10 @@ app.use((err, req, res, next) => {
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URL,
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "csrf-token"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-csrf-token"],
   },
 });
 

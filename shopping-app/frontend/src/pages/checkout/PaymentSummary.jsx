@@ -3,7 +3,7 @@ import apiClient from "../../services/apiClient";
 import { useNavigate } from "react-router-dom";
 import { cartQuantity } from "../../utils/cartQuantity";
 
-export function PaymentSummary({ cart, paymentSummary, fetchCart }) {
+export function PaymentSummary({ cart, paymentSummary}) {
   const navigate = useNavigate();
 
   const CreateOrder = async () => {
@@ -12,9 +12,7 @@ export function PaymentSummary({ cart, paymentSummary, fetchCart }) {
 
       //ejs render page to Stripe page, however React will locate windows to Stripe Page
       window.location.href = response.data.checkoutUrl;
-      // after order placed, remove that items from cart and redirect to order page
-      await fetchCart();
-      navigate("/checkout/orders");
+      return
     } catch (error) {
       if (error.response?.status === 401) {
         navigate("/login");

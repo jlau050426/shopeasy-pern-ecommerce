@@ -79,8 +79,8 @@ const postLogin = async (req, res, next) => {
 };
 
 const postLogout = (req, res, next) => {
-  const io = req.app.get("io")
-  const sessionUserID = req.session.sessionUserID
+  const io = req.app.get("io");
+  const sessionUserID = req.session.sessionUserID;
   req.session.destroy((err) => {
     //error occured!
     if (err) {
@@ -91,7 +91,7 @@ const postLogout = (req, res, next) => {
     }
     //log out successfully
     res.clearCookie("connect.sid");
-    io.to(`user-${sessionUserID}`).emit("auth:logout")
+    io.to(`user-${sessionUserID}`).emit("auth:logout");
     return res.status(200).json({
       message: "Successfully Log Out",
     });
@@ -108,13 +108,13 @@ const postSignUp = async (req, res, next) => {
   if (adminPasskey) {
     if (adminPasskey === process.env.ADMIN_PASSKEY) {
       role = "ADMIN";
-    }else{
+    } else {
       return res.status(422).json({
         message: "Invalid admin invitation code",
         oldInput: {
-          email: email
+          email: email,
         },
-      })
+      });
     }
   }
 
@@ -203,7 +203,7 @@ const postReset = (req, res, next) => {
         subject: "Reset Password Request",
         html: `
               <p>You request a password reset</p>
-              <p>Click this <a href="http://localhost:5173/set-new-password/${token}">link</a> to reset your password</p>
+              <p>Click this <a href="${process.env.FRONTEND_URL}/set-new-password/${token}">link</a> to reset your password</p>
               `,
       });
       return res.status(200).json({
@@ -274,31 +274,41 @@ const postNewPasswordForm = async (req, res, next) => {
 };
 
 const checkIsAdmin = (req, res, next) => {
-
   //check is logged in first
   //check isAdmin
   //return as user
 
   if (!req.session.isLoggedIn) {
     return res.status(401).json({
-      errorMessage: "Log In for More Details"
-    })
+      errorMessage: "Log In for More Details",
+    });
   }
 
   if (req.session.sessionUserRole === "ADMIN") {
     return res.status(200).json({
-      successMessage: "Welcome Admin"
-    })
+      successMessage: "Welcome Admin",
+    });
   }
 
   return res.status(403).json({
-    successMessage: "Welcome User"
-  })
-}
+    successMessage: "Welcome User",
+  });
+};
+
+const getCsrf = (req, res) => {
+  if (req.session && !req.session.csrfToken) {
+    req.session.csrfToken = crypto.randomBytes(32).toString("hex"); //csrf token generation
+  }
+
+  res.json({
+    csrfToken: req.session.csrfToken,
+  });
+};
 
 exports.postLogin = postLogin;
 exports.postLogout = postLogout;
 exports.postSignUp = postSignUp;
 exports.postReset = postReset;
 exports.postNewPasswordForm = postNewPasswordForm;
-exports.checkIsAdmin = checkIsAdmin
+exports.checkIsAdmin = checkIsAdmin;
+exports.getCsrf = getCsrf;

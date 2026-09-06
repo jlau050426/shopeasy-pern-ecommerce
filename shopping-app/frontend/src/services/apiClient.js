@@ -6,4 +6,22 @@ const apiClient = axios.create({
   withCredentials: true,
 });
 
+let csrfToken = null;
+
+//call this on APP jsx to generate token
+//call get/csrf-token to generate a token
+export async function initializeCsrf() {
+  const response = await apiClient.get("csrf-token");
+  csrfToken = response.data.csrfToken;
+}
+
+//set assign X-CSRF-Token header with csrf token value for every request
+apiClient.interceptors.request.use((config) => {
+  if (csrfToken) {
+    config.headers["X-CSRF-Token"] = csrfToken;
+  }
+
+  return config;
+});
+
 export default apiClient;

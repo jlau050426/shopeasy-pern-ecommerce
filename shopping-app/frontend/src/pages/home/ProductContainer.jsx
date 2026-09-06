@@ -8,6 +8,7 @@ export function ProductContainer({ product, fetchCart }) {
 
   const [productQuantity, setProductQuantity] = useState(1);
   const [cartAddedMessage, setCartAddedMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   //navigate to cart detail function
   function CartDetail(productID) {
@@ -32,10 +33,12 @@ export function ProductContainer({ product, fetchCart }) {
         if (error.response.status === 401) {
           navigate("/login");
         } else {
-          setCartAddedMessage(error.response.data?.message || "Product ID is required")
+          setErrorMessage(
+            error.response.data?.message || "Product ID is required",
+          );
         }
       } else {
-        setCartAddedMessage("Unable to Connect to Server!")
+        setErrorMessage("Unable to Connect to Server!");
       }
     }
   }
@@ -119,6 +122,23 @@ export function ProductContainer({ product, fetchCart }) {
             className="header-success-close"
             type="button"
             onClick={() => setCartAddedMessage("")}
+            aria-label="Dismiss error"
+          >
+            &times;
+          </button>
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className="header-error" role="alert">
+          <span className="header-error-icon" aria-hidden="true">
+            !
+          </span>
+          <span>{errorMessage}</span>
+          <button
+            className="header-error-close"
+            type="button"
+            onClick={() => setErrorMessage("")}
             aria-label="Dismiss error"
           >
             &times;

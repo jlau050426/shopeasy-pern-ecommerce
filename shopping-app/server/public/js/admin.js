@@ -12,7 +12,7 @@ const deleteProduct = async (btn) => {
         const result = await fetch(`/admin/delete-product/${prodId}`, {
             method: 'DELETE',
             headers: {
-                'csrf-token': csrf,
+                'x-csrf-token': csrf,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({

@@ -10,12 +10,35 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
   const [currentTime] = useState(() => Date.now());
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [countdown, setCountdown] = useState(null);
+
+  useEffect(() => {
+    if (countdown === null || countdown <= 0) return;
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [countdown]);
 
   async function deleteCartItem(cartItem) {
     try {
       await apiClient.delete(`/cart-delete-item/${cartItem.id}`);
       setSuccessMessage("Cart Deleted!");
     } catch (error) {
+      if (error.response) {
+        if (error.response.status === 409) {
+          setErrorMessage(error.response.data.message);
+          setTimeout(() => {
+            setErrorMessage("")
+          }, 5000);
+        } else {
+          setErrorMessage("Something Wrong");
+        }
+      } else {
+        setErrorMessage("Unable to connect to server");
+      }
       console.log(error);
       setErrorMessage("Fail to Delete Cart!");
     }
@@ -94,8 +117,15 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
                         });
                         await fetchCart();
                       } catch (error) {
-                        if (error.response?.status === 401) {
-                          navigate("/login");
+                        if (error.response) {
+                          if (error.response.status === 401) {
+                            navigate("/login");
+                          } else if (error.response.status === 409) {
+                            setErrorMessage(error.response.data.message);
+                            setTimeout(() => {
+                              setErrorMessage("")
+                            }, 5000);
+                          }
                         }
                         console.log(error);
                       }
@@ -168,7 +198,12 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
           <span className="header-error-icon" aria-hidden="true">
             !
           </span>
-          <span>{errorMessage}</span>
+          <div className="header-error-content">
+            <span>{errorMessage}</span>
+            {countdown !== null && countdown > 0 && (
+              <span> Redirecting in {countdown}...</span>
+            )}
+          </div>
           <button
             className="header-error-close"
             type="button"

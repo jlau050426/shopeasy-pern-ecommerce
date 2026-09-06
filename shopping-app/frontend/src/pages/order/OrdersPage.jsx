@@ -10,6 +10,7 @@ export function OrdersPage({ cart, fetchCart, isLoggedIn }) {
   //state to save the orders
   const [orders, setOrders] = useState([]);
   const [totalOrderPrice, setTotalOrderPrice] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     async function getOrders() {
@@ -24,7 +25,7 @@ export function OrdersPage({ cart, fetchCart, isLoggedIn }) {
         console.log(error);
       }
     }
-    fetchCart?.()
+    fetchCart?.();
     getOrders();
   }, [navigate, fetchCart]);
 
@@ -43,8 +44,19 @@ export function OrdersPage({ cart, fetchCart, isLoggedIn }) {
       // Update the React state with the new array.
       setOrders(updatedOrders);
     } catch (error) {
-      if (error.response?.status === 401) {
-        navigate("/login");
+      if (error.response) {
+        if (error.response.status === 401) {
+          navigate("/login");
+        } else if (error.response.status === 409) {
+          setErrorMessage(error.response.data.message);
+          setTimeout(() => {
+            setErrorMessage("");
+          }, 5000);
+        } else {
+          setErrorMessage("Some Error Occured");
+        }
+      } else {
+        setErrorMessage("Unable to connect to server");
       }
       console.log(error);
     }
@@ -65,13 +77,33 @@ export function OrdersPage({ cart, fetchCart, isLoggedIn }) {
                 order={order}
                 totalOrderPrice={totalOrderPrice}
                 handleOrderReceived={handleOrderReceived}
+                fetchCart={fetchCart}
               ></OrderContainer>
             );
           })}
         </div>
         <br />
         <br />
-        <div className="order-header-label">Total Order Price: {totalOrderPrice}</div>
+        <div className="order-header-label">
+          Total Order Price: {totalOrderPrice}
+        </div>
+
+        {errorMessage && (
+          <div className="header-error" role="alert">
+            <span className="header-error-icon" aria-hidden="true">
+              !
+            </span>
+            <span>{errorMessage}</span>
+            <button
+              className="header-error-close"
+              type="button"
+              onClick={() => setErrorMessage("")}
+              aria-label="Dismiss error"
+            >
+              &times;
+            </button>
+          </div>
+        )}
       </div>
     </>
   );

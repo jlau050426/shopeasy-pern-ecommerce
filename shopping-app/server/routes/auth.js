@@ -5,10 +5,12 @@ const router = express.Router();
 const db = require("../util/database");
 const authController = require("../controllers/auth");
 const { body } = require("express-validator");
+const verifyCsrfToken = require("../middleware/verifyCsrfToken");
 
 //log in route
 router.post(
   "/login",
+  verifyCsrfToken,
   [
     body("email")
       .isEmail()
@@ -20,11 +22,12 @@ router.post(
 );
 
 //logout route
-router.post("/logout", authController.postLogout);
+router.post("/logout", verifyCsrfToken, authController.postLogout);
 
 //sign up route
 router.post(
   "/sign-up",
+  verifyCsrfToken,
   [
     body("email")
       .isEmail()
@@ -61,6 +64,7 @@ router.post(
 // /reset route
 router.post(
   "/reset",
+  verifyCsrfToken,
   [
     body("email")
       .isEmail()
@@ -71,6 +75,7 @@ router.post(
 );
 router.post(
   "/new-password",
+  verifyCsrfToken,
   [
     body(
       "newPassword",
@@ -83,5 +88,8 @@ router.post(
   authController.postNewPasswordForm,
 );
 
-router.get("/check-admin", authController.checkIsAdmin)
+//get CSRF tokens
+router.get("/csrf-token", authController.getCsrf);
+
+router.get("/check-admin", authController.checkIsAdmin);
 module.exports = router;

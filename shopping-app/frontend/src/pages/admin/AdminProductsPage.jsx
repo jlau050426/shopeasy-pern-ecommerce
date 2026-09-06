@@ -32,11 +32,13 @@ export function AdminProductsPage() {
       );
     } catch (error) {
       console.error("Error deleting product:", error);
-      setErrorMessage(
-        error.response?.data?.message ||
-          error.response?.data?.errorMessage ||
-          "Failed to delete product. Please try again.",
-      );
+      if (error.response) {
+        if (error.response.status === 409) {
+          setErrorMessage(error.response.data?.message || "Unable to load an error message")
+        }
+      } else {
+        setErrorMessage("Unable to connect to server")
+      }
     }
   }
 
