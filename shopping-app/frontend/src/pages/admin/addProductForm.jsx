@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "./addProductForm.css";
+import "./AddProductForm.css";
 import apiClient from "../../services/apiClient";
 
 export function AddProductForm() {

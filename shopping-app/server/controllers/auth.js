@@ -216,12 +216,9 @@ const postReset = (req, res, next) => {
 };
 
 const postNewPasswordForm = async (req, res, next) => {
-  const token = req.body.token;
-  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-  const newPassword = req.body.newPassword;
   const confirmPassword = req.body.confirmPassword;
   const errors = validationResult(req);
-
+  const newPassword = req.body.newPassword;
   if (!errors.isEmpty()) {
     return res.status(422).json({
       message: errors.array()[0].msg,
@@ -236,6 +233,14 @@ const postNewPasswordForm = async (req, res, next) => {
 
   //insert new password into database
   try {
+    const token = req.body.token;
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    if (typeof token !== "string" || !/^[a-f0-9]{64}$/.test(token)) {
+      return res.status(400).json({
+        message: "Invalid reset link",
+      });
+    }
     // Hash the password
     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 

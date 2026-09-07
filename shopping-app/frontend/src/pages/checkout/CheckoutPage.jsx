@@ -25,7 +25,6 @@ export function CheckoutPage({ cart, fetchCart }) {
         if (error.response?.status === 401) {
           navigate("/login");
         }
-        console.log(error);
       }
     }
 

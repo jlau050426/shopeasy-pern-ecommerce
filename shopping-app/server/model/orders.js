@@ -11,6 +11,7 @@ class Orders {
                 order_items.product_id,
                 order_items.quantity,
                 order_items.price,
+                order_items.price_dollars,
                 (order_items.quantity * order_items.price) AS total_price,
                 order_items.date_receive_ms,
 				products.title,

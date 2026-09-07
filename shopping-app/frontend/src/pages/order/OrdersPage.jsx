@@ -9,15 +9,23 @@ export function OrdersPage({ cart, fetchCart, isLoggedIn }) {
   const navigate = useNavigate();
   //state to save the orders
   const [orders, setOrders] = useState([]);
-  const [totalOrderPrice, setTotalOrderPrice] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
+
+  function handleOrderStatusChanged(orderId, status) {
+    setOrders((currentOrders) =>
+      currentOrders.map((currentOrder) =>
+        currentOrder.id === orderId
+          ? { ...currentOrder, status }
+          : currentOrder,
+      ),
+    );
+  }
 
   useEffect(() => {
     async function getOrders() {
       try {
         const response = await apiClient.get("/checkout/orders");
         setOrders(response.data.orders);
-        setTotalOrderPrice(response.data.orderTotalPrice);
       } catch (error) {
         if (error.response?.status === 401) {
           navigate("/login");
@@ -62,6 +70,70 @@ export function OrdersPage({ cart, fetchCart, isLoggedIn }) {
     }
   }
 
+  async function handlePaymentCanceled(orderId) {
+    try {
+      // Delete the order from the backend.
+      await apiClient.delete(`/remove-payment/${orderId}`);
+
+      // Create a new array that contains every order
+      // except the one whose id matches orderId.
+      const updatedOrders = orders.filter((order) => {
+        return order.id !== orderId;
+      });
+
+      // Update the React state with the new array.
+      setOrders(updatedOrders);
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 401) {
+          navigate("/login");
+        } else if (error.response.status === 409) {
+          setErrorMessage(error.response.data.message);
+          setTimeout(() => {
+            setErrorMessage("");
+          }, 5000);
+        } else {
+          setErrorMessage("Some Error Occured");
+        }
+      } else {
+        setErrorMessage("Unable to connect to server");
+      }
+      console.log(error);
+    }
+  }
+
+  async function handleRemoveExpired(orderId) {
+    try {
+      // Delete the order from the backend.
+      await apiClient.delete(`/remove-expired/${orderId}`);
+
+      // Create a new array that contains every order
+      // except the one whose id matches orderId.
+      const updatedOrders = orders.filter((order) => {
+        return order.id !== orderId;
+      });
+
+      // Update the React state with the new array.
+      setOrders(updatedOrders);
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 401) {
+          navigate("/login");
+        } else if (error.response.status === 409) {
+          setErrorMessage(error.response.data.message);
+          setTimeout(() => {
+            setErrorMessage("");
+          }, 5000);
+        } else {
+          setErrorMessage("Some Error Occured");
+        }
+      } else {
+        setErrorMessage("Unable to connect to server");
+      }
+      console.log(error);
+    }
+  }
+
   return (
     <>
       <title>Orders</title>
@@ -75,19 +147,15 @@ export function OrdersPage({ cart, fetchCart, isLoggedIn }) {
               <OrderContainer
                 key={order.id}
                 order={order}
-                totalOrderPrice={totalOrderPrice}
                 handleOrderReceived={handleOrderReceived}
+                handlePaymentCanceled={handlePaymentCanceled}
+                handleRemoveExpired={handleRemoveExpired}
+                handleOrderStatusChanged={handleOrderStatusChanged}
                 fetchCart={fetchCart}
               ></OrderContainer>
             );
           })}
         </div>
-        <br />
-        <br />
-        <div className="order-header-label">
-          Total Order Price: {totalOrderPrice}
-        </div>
-
         {errorMessage && (
           <div className="header-error" role="alert">
             <span className="header-error-icon" aria-hidden="true">

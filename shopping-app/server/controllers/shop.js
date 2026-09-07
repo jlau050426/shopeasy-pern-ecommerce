@@ -15,6 +15,7 @@ const {
 } = require("../services/checkoutService.js");
 const { markOrderPaid } = require("../services/markOrderPaid.js");
 const markOrderExpired = require("../services/markOrderExpired.js");
+const db = require("../util/database.js");
 
 const getIndex = async (req, res, next) => {
   const productsPerPage = 50;
@@ -156,15 +157,12 @@ const getOrders = async (req, res, next) => {
     const result = await Orders.fetchAllOrders(sessionUserID);
     const orders = result.rows;
 
-    let orderTotalPrice = 0;
-
     //group orders by order id
     const groupedOrders = {};
-
     orders.forEach((order) => {
       const orderID = order.order_id;
       const itemTotalPrice = Number(order.total_price);
-      orderTotalPrice += itemTotalPrice;
+      const shippingCost = Number(order.price_dollars);
 
       //TODO:MODIFY HERE
       //check the presence of order object with order_id x
@@ -174,12 +172,16 @@ const getOrders = async (req, res, next) => {
           id: orderID,
           created_at: order.created_at,
           single_order_total_price: 0,
+          single_order_total_price_after_tax: 0,
           status: order.status,
           items: [],
         };
       }
 
-      groupedOrders[orderID].single_order_total_price += itemTotalPrice;
+      groupedOrders[orderID].single_order_total_price +=
+        itemTotalPrice + shippingCost;
+      groupedOrders[orderID].single_order_total_price_after_tax =
+        groupedOrders[orderID].single_order_total_price * 1.1;
 
       //push object details in object format
       groupedOrders[order.order_id].items.push({
@@ -189,13 +191,12 @@ const getOrders = async (req, res, next) => {
         price: order.price,
         imageurl: order.imageurl,
         total_price: order.total_price,
-        estimated_delivery_days: order.delivery_days,
+        estimated_delivered_time: order.date_receive_ms,
       });
     });
 
     res.status(200).json({
       orders: Object.values(groupedOrders),
-      orderTotalPrice: orderTotalPrice,
     });
   } catch (err) {
     next(err);
@@ -304,7 +305,8 @@ const postCheckout = async (req, res, next) => {
 
         success_url: `${process.env.FRONTEND_URL}/checkout/orders`,
 
-        cancel_url: `${process.env.FRONTEND_URL}/checkout`,
+        cancel_url: `${process.env.FRONTEND_URL}/checkout/orders`,
+        expires_at: Math.floor(Date.now() / 1000) + 60 * 60, // 1 hour
       },
       {
         idempotencyKey: `checkout-order-${pending.order.id}`,
@@ -408,6 +410,126 @@ const removeOrder = async (req, res, next) => {
   }
 };
 
+const removePayment = async (req, res, next) => {
+  const orderId = req.params.orderId;
+  const sessionUserID = req.session.sessionUserID;
+  try {
+    //check pending payment first. If pending payment, disable remove order
+    const result = await db.query(
+      `
+      SELECT status, stripe_session_id
+      FROM orders
+      WHERE id = $1
+        AND user_id = $2
+      `,
+      [orderId, sessionUserID],
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        message: "Order not found",
+      });
+    }
+
+    if (result.rows[0].status !== "PENDING_PAYMENT") {
+      return res.status(409).json({
+        message: "Only pending payment can be removed",
+      });
+    } else {
+      const order = result.rows[0];
+
+      if (!order.stripe_session_id) {
+        return res.status(409).json({
+          message: "The Stripe Checkout Session is still being created.",
+        });
+      }
+
+      let stripeSession = await stripe.checkout.sessions.retrieve(
+        order.stripe_session_id,
+      );
+
+      //verify the session belongs to this order and user
+      if (
+        String(stripeSession.metadata?.order_id) !== String(orderId) ||
+        String(stripeSession.metadata?.user_id) !== String(sessionUserID)
+      ) {
+        return res.status(409).json({
+          message: "Stripe Checkout Session does not match this order.",
+        });
+      }
+
+      //make stripeSession expire if it is open
+      if (stripeSession.status === "open") {
+        try {
+          stripeSession = await stripe.checkout.sessions.expire(
+            stripeSession.id,
+          );
+        } catch (error) {
+          // The customer might have completed payment at the same time
+          // that they clicked Cancel Payment.
+          stripeSession = await stripe.checkout.sessions.retrieve(
+            order.stripe_session_id,
+          );
+        }
+      }
+
+      if (stripeSession.status !== "expired") {
+        return res.status(409).json({
+          message:
+            "The payment is currently being processed and cannot be cancelled.",
+        });
+      }
+
+      await Orders.deleteOrderItems(sessionUserID, orderId);
+      await Orders.deleteOrder(sessionUserID, orderId);
+
+      return res.status(204).send();
+    }
+
+    //remove from orders table
+    await Orders.deleteOrderItems(sessionUserID, orderId);
+    await Orders.deleteOrder(sessionUserID, orderId);
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+};
+
+const removeExpiredOrder = async (req, res, next) => {
+  const orderId = req.params.orderId;
+  const sessionUserID = req.session.sessionUserID;
+  try {
+    //check pending payment first. If pending payment, disable remove order
+    const result = await db.query(
+      `
+  SELECT status
+  FROM orders
+  WHERE id = $1
+    AND user_id = $2
+  `,
+      [orderId, sessionUserID],
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        message: "Order not found",
+      });
+    }
+
+    if (result.rows[0].status !== "EXPIRED") {
+      return res.status(409).json({
+        message: "Only expired payment can be removed",
+      });
+    }
+    //remove from orders table
+    await Orders.deleteOrderItems(sessionUserID, orderId);
+    await Orders.deleteOrder(sessionUserID, orderId);
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+};
+
 const continueCheckout = async (req, res, next) => {
   try {
     const { order, stripeSession } = await getPendingCheckout(
@@ -470,6 +592,29 @@ const continueCheckout = async (req, res, next) => {
       });
     }
     return next(error);
+  }
+};
+
+const getPendingPayment = async (req, res, next) => {
+  try {
+    const result = await db.query(
+      `
+      SELECT id
+      FROM orders
+      WHERE user_id = $1
+        AND status = 'PENDING_PAYMENT'
+      LIMIT 1
+      `,
+      [req.session.sessionUserID],
+    );
+
+    if (result.rows.length > 0) {
+      return res.status(200).json({
+        message: "Pending Payment Exist!"
+      })
+    }
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -668,6 +813,9 @@ exports.getAvailableDeliveryOptionsDetails = getAvailableDeliveryOptionsDetails;
 exports.updateCartDeliveryOption = updateCartDeliveryOption;
 exports.removeCart = removeCart;
 exports.removeOrder = removeOrder;
+exports.removePayment = removePayment;
+exports.removeExpiredOrder = removeExpiredOrder;
 exports.getInvoice = getInvoice;
 exports.stripeWebhook = stripeWebhook;
 exports.continueCheckout = continueCheckout;
+exports.getPendingPayment = getPendingPayment

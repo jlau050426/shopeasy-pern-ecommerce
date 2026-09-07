@@ -2,22 +2,44 @@ import { formatMoney } from "../../utils/money";
 import apiClient from "../../services/apiClient";
 import { useNavigate } from "react-router-dom";
 import { cartQuantity } from "../../utils/cartQuantity";
+import { useEffect, useState } from "react";
 
-export function PaymentSummary({ cart, paymentSummary}) {
+export function PaymentSummary({ cart, paymentSummary }) {
   const navigate = useNavigate();
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+
+  useEffect(() => {
+    async function getPendingPayment() {
+      try {
+        const response = await apiClient.get("/pending-payment");
+        if (response.status === 200) {
+          setIsCreatingOrder(true)
+        } else {
+          setIsCreatingOrder(false)
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    getPendingPayment()
+  }, []);
 
   const CreateOrder = async () => {
+    if (isCreatingOrder) return;
+    setIsCreatingOrder(true);
     try {
       const response = await apiClient.post("/checkout");
 
       //ejs render page to Stripe page, however React will locate windows to Stripe Page
       window.location.href = response.data.checkoutUrl;
-      return
+      return;
     } catch (error) {
       if (error.response?.status === 401) {
         navigate("/login");
       }
-      console.log(error);
+    } finally {
+      setIsCreatingOrder(false);
     }
   };
 
@@ -76,8 +98,9 @@ export function PaymentSummary({ cart, paymentSummary}) {
           <button
             className="place-order-button button-primary"
             onClick={CreateOrder}
+            disabled={isCreatingOrder}
           >
-            Place your order
+            {isCreatingOrder ? "Pending Payment ...." : "Place your order"}
           </button>
         </>
       )}

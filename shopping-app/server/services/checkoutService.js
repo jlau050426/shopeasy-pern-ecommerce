@@ -110,9 +110,10 @@ async function createPendingOrder(sessionUserID) {
           quantity,
           price,
           date_receive_ms,
-          user_id
+          user_id,
+          price_dollars
         )
-        VALUES ($1, $2, $3, $4, $5, $6)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         `,
         [
           order.id,
@@ -121,6 +122,7 @@ async function createPendingOrder(sessionUserID) {
           item.price,
           receiveAt,
           sessionUserID,
+          item.price_dollars
         ],
       );
     }
