@@ -25,6 +25,8 @@ const verifyCsrfToken = require("./middleware/verifyCsrfToken");
 const app = express();
 //create a server that held express app
 const server = http.createServer(app);
+
+app.use(helmet());
 //initialise port
 const PORT = process.env.PORT;
 
