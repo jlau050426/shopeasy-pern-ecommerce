@@ -157,7 +157,14 @@ export function OrderContainer({
                 <div>{formatMoney(order.single_order_total_price_after_tax)}</div>
               </div>
             </div>
-
+            <div className="order-header-right-section">
+              <button
+                className="track-package-button button-expired"
+                onClick={() => handleRemoveExpired(order.id)}
+              >
+                REMOVE EXPIRED PAYMENT
+              </button>
+            </div>
             <div className="order-header-right-section">
               <div className="order-header-label">Order ID:</div>
               <div>{order.id}</div>
@@ -186,15 +193,6 @@ export function OrderContainer({
                     <div className="product-quantity">
                       Quantity: {item.quantity}
                     </div>
-                  </div>
-
-                  <div className="product-actions">
-                    <button
-                      className="track-package-button button-expired"
-                      onClick={() => handleRemoveExpired(order.id)}
-                    >
-                      REMOVE EXPIRED PAYMENT
-                    </button>
                   </div>
                 </Fragment>
               );

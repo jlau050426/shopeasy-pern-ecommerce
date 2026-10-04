@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 export function PaymentSummary({ cart, paymentSummary }) {
   const navigate = useNavigate();
+  //pending payment == isCreatingOrder
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
 
   useEffect(() => {
@@ -35,7 +36,7 @@ export function PaymentSummary({ cart, paymentSummary }) {
       window.location.href = response.data.checkoutUrl;
       return;
     } catch (error) {
-      if (error.response?.status === 401) {
+      if (error.response?.status === 401) { //user not log-in
         navigate("/login");
       }
     } finally {

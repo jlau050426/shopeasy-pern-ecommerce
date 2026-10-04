@@ -485,11 +485,6 @@ const removePayment = async (req, res, next) => {
 
       return res.status(204).send();
     }
-
-    //remove from orders table
-    await Orders.deleteOrderItems(sessionUserID, orderId);
-    await Orders.deleteOrder(sessionUserID, orderId);
-    res.status(204).send();
   } catch (err) {
     next(err);
   }

@@ -33,6 +33,17 @@ export function AdminProductsPage() {
     } catch (error) {
       console.error("Error deleting product:", error);
       if (error.response) {
+        if (error.response.status === 404) {
+          setErrorMessage(
+            error.response.data?.message ||
+            "product deletion failed",
+          );
+          setCountdown(5);
+          setTimeout(() => {
+            navigate("/admin/products")
+          }, 5000);
+        }
+
         if (error.response.status === 409) {
           setErrorMessage(error.response.data?.message || "Unable to load an error message")
         }
@@ -115,7 +126,7 @@ export function AdminProductsPage() {
           if (error.response.status === 404) {
             setErrorMessage(
               error.response.data?.message ||
-                "page exceeds maximum pages, redirecting to page 1.....",
+              "page exceeds maximum pages, redirecting to page 1.....",
             );
             setCountdown(5);
             setTimeout(() => {

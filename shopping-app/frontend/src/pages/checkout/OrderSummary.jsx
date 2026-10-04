@@ -40,7 +40,6 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
         setErrorMessage("Unable to connect to server");
       }
       console.log(error);
-      setErrorMessage("Fail to Delete Cart!");
     }
   }
 

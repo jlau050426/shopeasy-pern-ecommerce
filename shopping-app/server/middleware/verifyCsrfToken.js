@@ -6,7 +6,7 @@ const verifyCsrfToken = (req, res, next) => {
     if (!clientToken || clientToken !== req.session.csrfToken) {
       return res
         .status(403)
-        .send("Suspicious CSRF attacks! Accessing Forbidden!");
+        .json({message: "Suspicious CSRF attacks! Accessing Forbidden!"});
     }
   }
   next();

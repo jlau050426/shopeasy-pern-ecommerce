@@ -70,7 +70,7 @@ export function ProductDetails({ cart, isLoggedIn }) {
             <h2 style={{ margin: "15px 0", color: "#B12704" }}>
               {typeof product.price === "number"
                 ? formatMoney(product.price)
-                : `$${product.price}`}
+                : `RM${product.price}`}
             </h2>
 
             <p

@@ -138,7 +138,9 @@ const removeProduct = async (req, res, next) => {
   try {
     const selectedProduct = await Product.findProductByID(productID);
     if (selectedProduct.rows.length === 0) {
-      return res.redirect("/admin/products");
+      return res.status(404).json({
+        message: "No Product Found!"
+      })
     }
     const imageURL = path.join("images", selectedProduct.rows[0].imageurl);
     await Product.deleteProduct(productID);

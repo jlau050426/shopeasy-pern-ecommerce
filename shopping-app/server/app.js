@@ -6,6 +6,7 @@ const session = require("express-session");
 const { Server } = require("socket.io");
 const http = require("node:http");
 const cors = require("cors");
+const helmet = require("helmet")
 
 //imports route
 const adminRoute = require("./routes/admin");
@@ -27,6 +28,7 @@ const app = express();
 const server = http.createServer(app);
 
 app.use(helmet());
+
 //initialise port
 const PORT = process.env.PORT;
 
@@ -51,7 +53,15 @@ app.use(express.json());
 
 //static file
 app.use(express.static(path.join(__dirname, "public")));
-app.use(express.static(path.join(__dirname, "images")));
+app.use(express.static(path.join(__dirname, "images"),{
+    setHeaders(res) {
+      res.setHeader(
+        "Cross-Origin-Resource-Policy",
+        "cross-origin",
+      );
+    },
+  },
+));
 
 //initiating session
 const sessionMiddleware = session({
@@ -89,6 +99,7 @@ app.use(errorController.error404);
 
 //error handling middleware
 app.use((err, req, res, next) => {
+  console.log(err)
   res.status(500).json({
     message: "Internal Server Error", //just show internal server error everytime
   });

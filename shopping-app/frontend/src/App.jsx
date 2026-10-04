@@ -12,7 +12,7 @@ import { AddProductForm } from "./pages/admin/addProductForm";
 import { AdminProductsPage } from "./pages/admin/AdminProductsPage";
 import { EditProductForm } from "./pages/admin/editProductForm";
 import { Routes, Route } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import apiClient, { initializeCsrf } from "./services/apiClient";
 import { socket } from "./socket";
 
@@ -27,7 +27,8 @@ function App() {
   const [cart, setCart] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  async function fetchCart() {
+  //useCallBack will not create new fetchCart function everytime page rendered
+  const fetchCart = useCallback( async () => {
     try {
       const response = await apiClient.get("/cart");
       setCart(response.data.cart || []);
@@ -39,12 +40,12 @@ function App() {
         return;
       }
     }
-  }
+  }, [])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCart();
-  }, []);
+  }, [fetchCart]);
 
   //websocket initialization
   useEffect(() => {

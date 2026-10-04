@@ -13,7 +13,7 @@ export function HomePage({ cart, fetchCart, isLoggedIn }) {
   const [currentPage, setCurrentPage] = useState(null);
   const [search, setSearch] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
-  const [countdown, setCountdown] = useState();
+  const [countdown, setCountdown] = useState(null);
   const page = searchParams.get("page") || 1;
 
   //countdown timer

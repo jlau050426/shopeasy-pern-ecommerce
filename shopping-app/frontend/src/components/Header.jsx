@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import "./header.css";
 import { cartQuantity } from "../utils/cartQuantity";
-import apiClient from "../services/apiClient";
+import apiClient, { initializeCsrf } from "../services/apiClient";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { socket } from "../socket";
@@ -38,6 +38,7 @@ export function Header({
       await apiClient.post("/logout");
       //ask for socket rehandshake
       socket.disconnect().connect();
+      await initializeCsrf()
       navigate("/login");
     } catch (error) {
       console.log(error);
