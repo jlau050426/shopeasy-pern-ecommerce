@@ -607,6 +607,8 @@ const getPendingPayment = async (req, res, next) => {
       return res.status(200).json({
         message: "Pending Payment Exist!"
       })
+    }else{
+      return res.status(204).send()
     }
   } catch (error) {
     next(error);

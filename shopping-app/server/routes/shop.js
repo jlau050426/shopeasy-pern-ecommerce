@@ -15,7 +15,7 @@ router.get('/cart', isAuth, shopController.getCart) //done
 router.post('/cart', isAuth,verifyCsrfToken, blockCartDuringPayment, shopController.postCart) //done
 router.get('/delivery-options', shopController.getAvailableDeliveryOptionsDetails) //done
 router.delete('/cart-delete-item/:id', isAuth, blockCartDuringPayment, verifyCsrfToken, shopController.removeCart) //done
-router.get('/pending-payment', isAuth, verifyCsrfToken, shopController.getPendingPayment)
+router.get('/pending-payment', isAuth, shopController.getPendingPayment)
 router.put(`/cart-items/:id`, isAuth, verifyCsrfToken, blockCartDuringPayment, shopController.updateCartDeliveryOption)
 router.get('/checkout/orders', isAuth, shopController.getOrders)
 router.get('/checkout/order-&-product', isAuth, shopController.getOrderAndProduct)

@@ -149,5 +149,5 @@ vite.config.ts.timestamp-*
 .turbo
 
 # images/ and data/ (image & invoice pdf)
-.images
-.data
+/images/*
+/data/*

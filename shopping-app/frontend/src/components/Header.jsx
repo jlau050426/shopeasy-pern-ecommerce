@@ -23,6 +23,7 @@ export function Header({
     function handleSocketLogout() {
       socket.disconnect().connect();
       setIsAdmin(false);
+      initializeCsrf()
       navigate("/login");
     }
 

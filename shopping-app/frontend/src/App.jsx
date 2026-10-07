@@ -23,7 +23,7 @@ function App() {
   }, []);
 
   //state lifted up
-  //track cart quantity
+  //track cart   quantity
   const [cart, setCart] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
