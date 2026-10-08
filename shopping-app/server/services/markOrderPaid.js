@@ -1,3 +1,5 @@
+// REMINDER: STRIPE WILL KEEP ON RETRY WHEN RESPONSE IS NOT 2XX. So Tell Stripe to Stop retrying
+
 const db = require("../util/database");
 
 async function markOrderPaid(stripeSession) {
@@ -21,7 +23,9 @@ async function markOrderPaid(stripeSession) {
     );
 
     if (result.rows.length === 0) {
-      throw new Error("Pending order not found");
+      const error = new Error("Pending order not found");
+      error.isPermanent = true; // retrying will never make the order appear
+      throw error;
     }
 
     const order = result.rows[0];
@@ -32,23 +36,24 @@ async function markOrderPaid(stripeSession) {
       return;
     }
 
-
     //only allow status of PENDING_PAYMENT to process payment
     if (order.status !== "PENDING_PAYMENT") {
-      throw new Error(
-        `Invalid order status: ${order.status}`,
-      );
+      const error = new Error(`Invalid order status: ${order.status}`);
+      error.isPermanent = true; //orders never go back to pending payment
+      throw error;
     }
 
-    if (
-      order.stripe_session_id !== stripeSession.id
-    ) {
-      throw new Error("Stripe Session does not match order");
+    if (order.stripe_session_id !== stripeSession.id) {
+      const error = new Error("Stripe Session does not match order");
+      error.isPermanent = true; // the order's session will not change
+      throw error
     }
 
     //only allow payment if stripe payment status is "paid"
     if (stripeSession.payment_status !== "paid") {
-      throw new Error("Stripe Session is not paid");
+      const error = new Error("Stripe Session is not paid");
+      error.isPermanent = true; // the same event will always say unpaid
+      throw error
     }
 
     await client.query(

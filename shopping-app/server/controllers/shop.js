@@ -399,22 +399,50 @@ const stripeWebhook = async (req, res, next) => {
   // Handle the event
   try {
     const session = event.data.object;
+
+    //sessions created by this shop always carry order_id and user_id
+    const isShopSession =
+      Number.isInteger(Number(session.metadata?.order_id)) &&
+      Number.isInteger(Number(session.metadata?.user_id));
+
     switch (event.type) {
       case "checkout.session.completed":
+        if (!isShopSession) {
+          console.log(
+            `Ignoring ${event.type} ${session.id}: not created by this shop`,
+          );
+          break;
+        }
         if (session.payment_status === "paid") {
           await markOrderPaid(session);
         }
-
         break;
 
       case "checkout.session.expired":
+        if (!isShopSession) {
+          console.log(
+            `Ignoring ${event.type} ${session.id}: not created by this shop`,
+          );
+          break;
+        }
         await markOrderExpired(session);
         break;
+
       default:
         console.log(`Unhandled event type ${event.type}`);
     }
     return res.sendStatus(200);
   } catch (error) {
+    if (error.isPermanent) {
+      //retrying will never fix this -> 200 so Stripe stops retrying, but keep a record
+      console.error(
+        `Stripe webhook ignored: ${event.type} ${event.id} (session ${event.data.object.id}):`,
+        error.message,
+      );
+      return res.sendStatus(200);
+    }
+
+    //temporary problem (e.g. database down) -> 500 so Stripe retries later
     console.error("Stripe webhook processing failed:", error);
     return res.sendStatus(500);
   }
