@@ -96,6 +96,13 @@ class Product {
             `
         )
     }
+
+    static findDeliveryOptionByID(id) {
+    return db.query(
+        "SELECT id FROM delivery_options WHERE id = $1",
+        [id]
+    )
+}
 }
 
 module.exports = Product

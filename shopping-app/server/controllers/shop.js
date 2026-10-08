@@ -16,6 +16,7 @@ const {
 const { markOrderPaid } = require("../services/markOrderPaid.js");
 const markOrderExpired = require("../services/markOrderExpired.js");
 const db = require("../util/database.js");
+const { validationResult } = require("express-validator");
 
 const getIndex = async (req, res, next) => {
   const productsPerPage = 50;
@@ -57,16 +58,26 @@ const getProduct = async (req, res, next) => {
 };
 
 const postCart = async (req, res, next) => {
+  const error = validationResult(req);
+  if (!error.isEmpty()) {
+    return res.status(422).json({
+      message: error.array()[0].msg,
+    });
+  }
+
   const productID = req.body.productId;
-  const quantity = req.body.quantity || 1;
+  const quantity = req.body.quantity ?? 1;
   const sessionUserID = req.session.sessionUserID;
   const io = req.app.get("io");
 
   try {
-    if (!productID) {
-      return res.status(400).json({ error: "Product ID is required" });
+    //before add to cart, make sure the product is still available
+    const product = await Product.findProductByID(productID);
+    if (product.rows.length === 0) {
+      return res.status(404).json({
+        message: "This product is no longer available",
+      });
     }
-
     await Cart.addCart(productID, quantity, sessionUserID);
 
     io.to(`user-${sessionUserID}`).emit("cart:updated");
@@ -120,17 +131,38 @@ const getAvailableDeliveryOptionsDetails = async (req, res, next) => {
 };
 
 const updateCartDeliveryOption = async (req, res, next) => {
+  const error = validationResult(req);
+  if (!error.isEmpty()) {
+    return res.status(422).json({
+      message: error.array()[0].msg,
+    });
+  }
   const cartId = req.params.id;
   const deliveryOptionId = req.body.deliveryOptionId;
   const sessionUserID = req.session.sessionUserID;
   const io = req.app.get("io");
 
   try {
-    await Cart.updateCartDeliveryOptions(
+    //check if deliveryOptionId exist
+    const options = await Product.findDeliveryOptionByID(deliveryOptionId);
+    if (options.rows.length === 0) {
+      return res.status(404).json({
+        message: "Delivery option not found",
+      });
+    }
+
+    const result = await Cart.updateCartDeliveryOptions(
       deliveryOptionId,
       cartId,
       sessionUserID,
     );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        message: "Cart item not found",
+      });
+    }
+
     io.to(`user-${sessionUserID}`).emit("cart:delivery-updated");
     res.status(204).send();
   } catch (err) {
@@ -139,11 +171,24 @@ const updateCartDeliveryOption = async (req, res, next) => {
 };
 
 const removeCart = async (req, res, next) => {
+  const error = validationResult(req);
+  if (!error.isEmpty()) {
+    return res.status(422).json({
+      message: error.array()[0].msg,
+    });
+  }
   const currentCartID = req.params.id;
   const sessionUserID = req.session.sessionUserID;
   const io = req.app.get("io");
   try {
-    await Cart.deleteCart(currentCartID, sessionUserID);
+    const result = await Cart.deleteCart(currentCartID, sessionUserID);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        message: "Product Not Found",
+      });
+    }
+
     io.to(`user-${sessionUserID}`).emit("cart:deleted");
     res.status(204).send();
   } catch (err) {
@@ -605,10 +650,10 @@ const getPendingPayment = async (req, res, next) => {
 
     if (result.rows.length > 0) {
       return res.status(200).json({
-        message: "Pending Payment Exist!"
-      })
-    }else{
-      return res.status(204).send()
+        message: "Pending Payment Exist!",
+      });
+    } else {
+      return res.status(204).send();
     }
   } catch (error) {
     next(error);
@@ -815,4 +860,4 @@ exports.removeExpiredOrder = removeExpiredOrder;
 exports.getInvoice = getInvoice;
 exports.stripeWebhook = stripeWebhook;
 exports.continueCheckout = continueCheckout;
-exports.getPendingPayment = getPendingPayment
+exports.getPendingPayment = getPendingPayment;
