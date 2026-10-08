@@ -61,6 +61,7 @@ const getEditProduct = async (req, res, next) => {
       currentTitle: product.title,
       currentPrice: product.price,
       currentDescription: product.description,
+      currentImageURL: product.imageurl
     });
   } catch (err) {
     next(err);

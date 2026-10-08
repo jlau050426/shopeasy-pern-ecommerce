@@ -10,6 +10,7 @@ export function EditProductForm() {
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
+  const [currentImageURL, setCurrentImageURL] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [countdown, setCountdown] = useState(null);
 
@@ -43,11 +44,11 @@ export function EditProductForm() {
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
+      setTimeout(() => {
+        setErrorMessage("");
+      }, 3000);
       return;
     }
-    setTimeout(() => {
-      setErrorMessage("");
-    }, 3000);
     setImageFile(file);
   }
 
@@ -71,11 +72,6 @@ export function EditProductForm() {
       return;
     }
 
-    if (!imageFile) {
-      setErrorMessage("Please select a product image to upload.");
-      return;
-    }
-
     const numericPrice = parseFloat(price);
     if (isNaN(numericPrice) || numericPrice <= 0) {
       setErrorMessage("Please enter a valid price greater than $0.00.");
@@ -87,13 +83,26 @@ export function EditProductForm() {
       return;
     }
 
+    if (!imageFile) {
+      const isConfirmed = window.confirm(
+        `No new image selected. Keep the current image?`,
+      );
+      if (!isConfirmed) return;
+
+    }
+
     setIsLoading(true);
 
     try {
       const formData = new FormData();
       formData.append("id", productID);
       formData.append("title", title.trim());
-      formData.append("image", imageFile);
+
+      //only append image file information if user uploaded an image
+      if (imageFile) {
+        formData.append("image", imageFile);
+      }
+
       formData.append("price", numericPrice);
       formData.append("description", description.trim());
 
@@ -133,7 +142,7 @@ export function EditProductForm() {
           setErrorMessage(
             error.response.data?.errorMessage || "Something Wrong",
           );
-          setTimeout(5);
+          setCountdown(5)
           setTimeout(() => {
             navigate("/admin/products");
           }, 5000);
@@ -155,6 +164,7 @@ export function EditProductForm() {
         setTitle(response.data.currentTitle);
         setPrice(response.data.currentPrice);
         setDescription(response.data.currentDescription);
+        setCurrentImageURL(response.data.currentImageURL)
       } catch (error) {
         if (error.response) {
           if (error.response.status === 401) {
@@ -284,9 +294,17 @@ export function EditProductForm() {
 
             {/* Image Upload Field */}
             <div className="form-group">
-              <label htmlFor="image">
-                Product Image <span className="required-indicator">*</span>
-              </label>
+              <label>Current Image</label>
+              {currentImageURL && (
+                <img
+                  src={`${import.meta.env.VITE_API_URL}/${currentImageURL}`}
+                  alt="Current product"
+                  // Up to 600px on desktop, and shrinks on narrow screens without changing shape.
+                  style={{ width: "100%", maxWidth: "600px", height: "auto" }}
+                />
+              )}
+              <br />
+              <label htmlFor="image">Upload Image (Optional)</label>
               <input
                 ref={fileInputRef}
                 id="image"
@@ -295,10 +313,9 @@ export function EditProductForm() {
                 accept="image/*"
                 onChange={handleFileSelect}
                 disabled={isLoading}
-                required
               />
               <p className="field-hint">
-                Supported formats: PNG, JPG, JPEG, WEBP.
+                Leave empty to keep current image. Supported formats: PNG, JPG, JPEG
               </p>
             </div>
 
