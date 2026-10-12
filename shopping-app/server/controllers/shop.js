@@ -2,7 +2,6 @@
 const Product = require("../model/product");
 const Cart = require("../model/cart");
 const Orders = require("../model/orders");
-const dirname = require("../util/path.js");
 const path = require("path");
 const fs = require("fs");
 const PDFDocument = require("pdfkit");
@@ -17,6 +16,7 @@ const { markOrderPaid } = require("../services/markOrderPaid.js");
 const markOrderExpired = require("../services/markOrderExpired.js");
 const db = require("../util/database.js");
 const { validationResult } = require("express-validator");
+const {DATA_DIR} = require("../util/folders.js")
 
 const getIndex = async (req, res, next) => {
   const productsPerPage = 50;
@@ -698,7 +698,7 @@ const getInvoice = async (req, res, next) => {
   //invoice name will follow invoice-(orderID).pdf
   const invoiceName = `invoice-${orderID}.pdf`;
   //invoice path
-  const invoicePath = path.join(dirname, "data", invoiceName);
+  const invoicePath = path.join(DATA_DIR, invoiceName);
 
   const pdfDoc = new PDFDocument();
 

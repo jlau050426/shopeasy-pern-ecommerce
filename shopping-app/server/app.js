@@ -1,12 +1,15 @@
 //imports
-require("dotenv").config(); //env file imports
-const path = require("path");
+const path = require("path")
+const dotenvFilePath = path.join(__dirname, ".env")
+require("dotenv").config({path: dotenvFilePath}); //env file imports
 const express = require("express");
 const session = require("express-session");
 const { Server } = require("socket.io");
 const http = require("node:http");
 const cors = require("cors");
 const helmet = require("helmet")
+const {IMAGES_DIR} = require("./util/folders")
+
 
 //imports route
 const adminRoute = require("./routes/admin");
@@ -52,8 +55,7 @@ app.use(
 app.use(express.json());
 
 //static file
-app.use(express.static(path.join(__dirname, "public")));
-app.use(express.static(path.join(__dirname, "images"),{
+app.use(express.static(IMAGES_DIR,{
     setHeaders(res) {
       res.setHeader(
         "Cross-Origin-Resource-Policy",

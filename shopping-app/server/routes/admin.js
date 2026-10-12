@@ -2,6 +2,7 @@
 const express = require("express");
 const { body } = require("express-validator");
 const multer = require("multer"); //image uploads
+const {IMAGES_DIR} = require("../util/folders")
 
 const router = express.Router();
 
@@ -17,7 +18,7 @@ const blockCartDuringPayment = require("../middleware/blockCartDuringPayment");
 //multer file storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "images/"); //create a directory called images on local to retrieve file
+    cb(null, IMAGES_DIR); //retrieve file from /images folder
   },
 
   filename: (req, file, cb) => {

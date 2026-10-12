@@ -3,6 +3,7 @@ const Product = require("../model/product");
 const fileOperator = require("../util/file");
 const { validationResult } = require("express-validator");
 const path = require("path");
+const {IMAGES_DIR} = require("../util/folders")
 
 //post add product form
 const postAddProduct = async (req, res, next) => {
@@ -137,7 +138,7 @@ const postEditProduct = async (req, res, next) => {
       isDbUpdated = true; //database has been updated
       //product found and YOU are the one updating the product right now
       if (image) {
-        const oldImagePath = path.join("images", existingImageURL);
+        const oldImagePath = path.join(IMAGES_DIR, existingImageURL);
         await fileOperator.removeImage(oldImagePath);
       }
       io.emit("admin-product-edited"); //broadcast to everyone
@@ -165,7 +166,7 @@ const removeProduct = async (req, res, next) => {
         message: "No Product Found!",
       });
     }
-    const imageURL = path.join("images", selectedProduct.rows[0].imageurl);
+    const imageURL = path.join(IMAGES_DIR, selectedProduct.rows[0].imageurl);
     await Product.deleteProduct(productID);
     await fileOperator.removeImage(imageURL); // remove image after database execution complete
     io.emit("admin-product-removed"); //broadcast to everyone
