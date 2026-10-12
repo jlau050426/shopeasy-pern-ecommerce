@@ -218,6 +218,11 @@ export function OrderContainer({
               <div>{order.id}</div>
             </div>
 
+
+            <a href={`${API_URL}/order/${order.id}`}>
+              ORDER INVOICE PDF
+            </a>
+
             <button
               className="buy-again-button button-secondary"
               onClick={() => handleOrderReceived(order.id)}
@@ -259,11 +264,6 @@ export function OrderContainer({
                         Track package
                       </button>
                     </Link>
-                    <br />
-                    <br />
-                    <a href={`${API_URL}/order/${order.id}`}>
-                      ORDER INVOICE PDF
-                    </a>
                   </div>
                 </Fragment>
               );

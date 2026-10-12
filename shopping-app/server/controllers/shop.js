@@ -712,6 +712,13 @@ const getInvoice = async (req, res, next) => {
     }
     const creationDateTime = ordersByID.rows[0].created_at.toLocaleDateString();
 
+    //only paid orders have an invoice
+    if (ordersByID.rows[0].status !== "PAID") {
+      return res.status(409).json({
+        message: "Invoice is only available after payment",
+      });
+    }
+
     const writeStream = fs.createWriteStream(invoicePath); // write to PDF
     pdfDoc.pipe(writeStream);
     // =========================
@@ -754,18 +761,23 @@ const getInvoice = async (req, res, next) => {
       .fillColor("#777777")
       .text("PRODUCT", 50, y);
 
-    pdfDoc.text("PRICE", 330, y, {
+    pdfDoc.text("PRICE", 280, y, {
       width: 65,
       align: "right",
     });
 
-    pdfDoc.text("QTY", 405, y, {
-      width: 40,
+    pdfDoc.text("QTY", 350, y, {
+      width: 35,
       align: "right",
     });
 
-    pdfDoc.text("SUBTOTAL", 455, y, {
-      width: 90,
+    pdfDoc.text("SHIPPING", 390, y, {
+      width: 70,
+      align: "right",
+    });
+
+    pdfDoc.text("SUBTOTAL", 465, y, {
+      width: 80,
       align: "right",
     });
 
@@ -781,41 +793,77 @@ const getInvoice = async (req, res, next) => {
     // =========================
 
     let total = 0;
+    let totalSubtotal = 0; // use to calculate tax
     ordersByID.rows.forEach((row) => {
-      const subtotal = Number(row.total_price);
+      let subtotal = Number(row.total_price);
+      let shipping = Number(row.price_dollars).toFixed(2)
+      subtotal += Number(shipping)
+      totalSubtotal += Number(subtotal);
       total += Number(subtotal);
       pdfDoc
         .fontSize(10)
         .font("Helvetica")
         .fillColor("#222222")
         .text(row.title, 50, y, {
-          width: 260,
+          width: 225,
         });
-      pdfDoc.text(`RM ${row.price}`, 330, y, {
+      pdfDoc.text(`RM ${row.price}`, 280, y, {
         width: 65,
         align: "right",
       });
-      pdfDoc.text(row.quantity.toString(), 405, y, {
-        width: 40,
+      pdfDoc.text(row.quantity.toString(), 350, y, {
+        width: 35,
         align: "right",
       });
 
-      pdfDoc.text(`RM ${subtotal}`, 455, y, {
-        width: 90,
+      pdfDoc.text(`RM${row.price_dollars}`, 390, y, {
+        width: 70,
+        align: "right",
+      });
+
+      pdfDoc.text(`RM ${subtotal.toFixed(2)}`, 465, y, {
+        width: 80,
         align: "right",
       });
 
       y += 30;
     });
 
+    //tax
+    // Divider
+    y += 10;
+
+    pdfDoc.moveTo(50, y).lineTo(545, y).strokeColor("#dddddd").stroke();
+
+    y += 15;
+
+    pdfDoc
+      .fontSize(9)
+      .font("Helvetica-Bold")
+      .fillColor("#777777")
+      .text("TAX (10%)", 50, y);
+
+    let tax = (totalSubtotal * 0.1).toFixed(2);
+
+    pdfDoc.text(`RM ${tax}`, 330, y, {
+      width: 65,
+      align: "right",
+    });
+
+    total += Number(tax);
+    total = total.toFixed(2);
+
     // =========================
     // Total
     // =========================
 
+    //divider
     y += 10;
 
-    pdfDoc.moveTo(350, y).lineTo(545, y).strokeColor("#dddddd").stroke();
-    y += 20;
+    pdfDoc.moveTo(50, y).lineTo(545, y).strokeColor("#dddddd").stroke();
+
+    y += 15;
+
     pdfDoc
       .fontSize(10)
       .font("Helvetica-Bold")
