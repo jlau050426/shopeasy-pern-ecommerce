@@ -28,7 +28,7 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   //useCallBack will not create new fetchCart function everytime page rendered
-  const fetchCart = useCallback( async () => {
+  const fetchCart = useCallback(async () => {
     try {
       const response = await apiClient.get("/cart");
       setCart(response.data.cart || []);
@@ -59,53 +59,29 @@ function App() {
       socket.off("cart:updated", onCartUpdated);
       socket.off("cart:deleted", onCartUpdated);
     };
-  }, []);
+  }, [fetchCart]);
+
+  const logout = useCallback(() => {
+    setCart([])
+    setIsLoggedIn(false)
+  }, [])
 
   return (
     <Routes>
       {/* Route add page to website  */}
-      <Route
-        path="/"
-        element={
-          <HomePage cart={cart} fetchCart={fetchCart} isLoggedIn={isLoggedIn} />
-        }
-      />
-      <Route
-        path="/product/:productID"
-        element={<ProductDetails cart={cart} isLoggedIn={isLoggedIn} />}
-      />
-      <Route
-        path="/checkout"
-        element={<CheckoutPage cart={cart} fetchCart={fetchCart} />}
-      />
-      <Route
-        path="/checkout/orders"
-        element={
-          <OrdersPage
-            cart={cart}
-            fetchCart={fetchCart}
-            isLoggedIn={isLoggedIn}
-          />
-        }
-      />
-      <Route
-        path="/tracking"
-        element={<TrackingPage cart={cart} isLoggedIn={isLoggedIn} />}
-      />
+      <Route path="/" element={<HomePage cart={cart} fetchCart={fetchCart} isLoggedIn={isLoggedIn} reactHandleLogout={logout} />} />
+      <Route path="/product/:productID" element={<ProductDetails cart={cart} isLoggedIn={isLoggedIn} reactHandleLogout={logout} />} />
+      <Route path="/checkout" element={<CheckoutPage cart={cart} fetchCart={fetchCart} />} />
+      <Route path="/checkout/orders" element={<OrdersPage cart={cart} fetchCart={fetchCart} isLoggedIn={isLoggedIn} reactHandleLogout={logout} />} />
+      <Route path="/tracking" element={<TrackingPage cart={cart} isLoggedIn={isLoggedIn} reactHandleLogout={logout} />} />
       <Route path="/login" element={<LoginPage fetchCart={fetchCart} />} />
       <Route path="/sign-up" element={<SignupPage />} />
       <Route path="/reset-password" element={<PasswordResetPage />} />
       <Route path="/set-new-password/:token" element={<NewPasswordPage />} />
       <Route path="/admin/products" element={<AdminProductsPage />} />
-      <Route
-        path="/admin/edit-product/:productID"
-        element={<EditProductForm />}
-      />
+      <Route path="/admin/edit-product/:productID" element={<EditProductForm />} />
       <Route path="/admin/add-product" element={<AddProductForm />} />
-      <Route
-        path="*"
-        element={<Error404 cart={cart} isLoggedIn={isLoggedIn} />}
-      />
+      <Route path="*" element={<Error404 cart={cart} isLoggedIn={isLoggedIn} reactHandleLogout={logout} />} />
     </Routes>
   );
 }

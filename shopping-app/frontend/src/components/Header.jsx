@@ -11,6 +11,7 @@ export function Header({
   search = "",
   setSearch = () => {},
   isLoggedIn,
+  reactHandleLogout = () => {}
 }) {
   const totalQuantity = cartQuantity(cart);
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ export function Header({
   //socket logout function
   useEffect(() => {
     function handleSocketLogout() {
+      reactHandleLogout()
       socket.disconnect().connect();
       setIsAdmin(false);
       initializeCsrf()
@@ -32,11 +34,12 @@ export function Header({
     return () => {
       socket.off("auth:logout", handleSocketLogout);
     };
-  }, [navigate]);
+  }, [navigate, reactHandleLogout]);
 
   async function handleLogout() {
     try {
       await apiClient.post("/logout");
+      reactHandleLogout()
       //ask for socket rehandshake
       socket.disconnect().connect();
       await initializeCsrf()
@@ -133,7 +136,7 @@ export function Header({
               type="button"
               onClick={handleLogout}
             >
-              Log out
+              Log Out
             </button>
           </div>
         ) : isLoggedIn ? (

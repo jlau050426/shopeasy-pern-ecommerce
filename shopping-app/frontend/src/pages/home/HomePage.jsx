@@ -6,7 +6,7 @@ import { ProductContainer } from "./ProductContainer";
 import { generatePagination } from "./pagination";
 import { useSearchParams } from "react-router-dom";
 
-export function HomePage({ cart, fetchCart, isLoggedIn }) {
+export function HomePage({ cart, fetchCart, isLoggedIn, reactHandleLogout}) {
   const [products, setProducts] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [totalPages, setTotalPages] = useState(null);
@@ -86,6 +86,7 @@ export function HomePage({ cart, fetchCart, isLoggedIn }) {
         search={search}
         setSearch={setSearch}
         isLoggedIn={isLoggedIn}
+        reactHandleLogout={reactHandleLogout}
       ></Header>
       <div className="home-page">
         {errorMessage && (
