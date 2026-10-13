@@ -1,15 +1,16 @@
 //imports
-const path = require("path")
-const dotenvFilePath = path.join(__dirname, ".env")
-require("dotenv").config({path: dotenvFilePath}); //env file imports
+const path = require("path");
+const dotenvFilePath = path.join(__dirname, ".env");
+require("dotenv").config({ path: dotenvFilePath }); //env file imports
 const express = require("express");
 const session = require("express-session");
 const { Server } = require("socket.io");
 const http = require("node:http");
 const cors = require("cors");
-const helmet = require("helmet")
-const {IMAGES_DIR} = require("./util/folders")
-
+const helmet = require("helmet");
+const { IMAGES_DIR } = require("./util/folders");
+const database = require("./util/database"); //for session store
+const pgSessionStore = require("connect-pg-simple")(session);
 
 //imports route
 const adminRoute = require("./routes/admin");
@@ -52,18 +53,20 @@ app.use(
 app.use(express.json());
 
 //static file
-app.use(express.static(IMAGES_DIR,{
+app.use(
+  express.static(IMAGES_DIR, {
     setHeaders(res) {
-      res.setHeader(
-        "Cross-Origin-Resource-Policy",
-        "cross-origin",
-      );
+      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
     },
-  },
-));
+  }),
+);
 
 //initiating session
 const sessionMiddleware = session({
+  store: new pgSessionStore({
+    pool: database,
+    createTableIfMissing: true,
+  }),
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
@@ -98,7 +101,7 @@ app.use(errorController.error404);
 
 //error handling middleware
 app.use((err, req, res, next) => {
-  console.log(err)
+  console.log(err);
   res.status(500).json({
     message: "Internal Server Error", //just show internal server error everytime
   });

@@ -20,6 +20,8 @@ function App() {
   //generate csrf token before starting everything
   useEffect(() => {
     initializeCsrf()
+      .catch((error) => console.log(error))   //TODO This is directly copy-paste from Claude. Too Advance for current level (dealing with CSRF)
+
   }, []);
 
   //state lifted up

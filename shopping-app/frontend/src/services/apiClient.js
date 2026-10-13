@@ -24,4 +24,35 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
+
+//TODO This is directly copy paste from Claude, too advance for current level (DEALING WITH CSRF)
+
+let csrfRefresh = null; //one shared refresh, even if several requests fail at the same time
+
+//if the server rejects our CSRF token (stale token), get a new one and resend the request once
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const config = error.config;
+    const isCsrfError =
+      error.response?.status === 403 &&
+      error.response.data?.code === "CSRF_INVALID";
+
+    if (isCsrfError && config && !config._csrfRetried) {
+      config._csrfRetried = true; //mark it, so a request is never retried more than once
+
+      if (!csrfRefresh) {
+        csrfRefresh = initializeCsrf().finally(() => {
+          csrfRefresh = null;
+        });
+      }
+      await csrfRefresh;
+
+      return apiClient(config); //resend: the request interceptor adds the new token
+    }
+
+    return Promise.reject(error);
+  },
+);
+
 export default apiClient;
