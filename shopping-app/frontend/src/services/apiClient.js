@@ -12,13 +12,13 @@ let csrfToken = null;
 //call get/csrf-token to generate a token
 export async function initializeCsrf() {
   const response = await apiClient.get("csrf-token");
-  csrfToken = response.data.csrfToken;
+  csrfToken = response.data.csrfToken; //response obtained from getCsrf
 }
 
 //set assign X-CSRF-Token header with csrf token value for every request
 apiClient.interceptors.request.use((config) => {
   if (csrfToken) {
-    config.headers["X-CSRF-Token"] = csrfToken;
+    config.headers["X-CSRF-Token"] = csrfToken; //attach csrfToken to the http header
   }
 
   return config;

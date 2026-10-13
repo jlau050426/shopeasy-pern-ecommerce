@@ -22,9 +22,6 @@ const errorController = require("./controllers/error");
 //import shopController for webhook
 const shopController = require("./controllers/shop");
 
-//import middleware
-const verifyCsrfToken = require("./middleware/verifyCsrfToken");
-
 //initialise express app
 const app = express();
 //create a server that held express app

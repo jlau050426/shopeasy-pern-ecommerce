@@ -49,19 +49,28 @@ const postLogin = async (req, res, next) => {
     const isPasswordMatch = await bcrypt.compare(password, storedHashPassword);
 
     if (isPasswordMatch) {
-      //create a session
-      req.session.isLoggedIn = true;
-      req.session.sessionUserID = existingUser.rows[0].id;
-      req.session.sessionUserRole = existingUser.rows[0].role;
-      req.session.save((err) => {
+      //regenerate session
+      req.session.regenerate((err) => {
         if (err) {
-          console.log(err);
           return res.status(500).json({
-            message: "Session Operation Failed! Internal Server Error",
+            message: "Session Operation Fail! Internal Server Error",
           });
         }
-        return res.status(200).json({
-          message: "Login Successful!",
+
+        //create a session
+        req.session.isLoggedIn = true;
+        req.session.sessionUserID = existingUser.rows[0].id;
+        req.session.sessionUserRole = existingUser.rows[0].role;
+        req.session.save((err) => {
+          if (err) {
+            console.log(err);
+            return res.status(500).json({
+              message: "Session Operation Failed! Internal Server Error",
+            });
+          }
+          return res.status(200).json({
+            message: "Login Successful!",
+          });
         });
       });
     } else {
@@ -257,7 +266,7 @@ const postNewPasswordForm = async (req, res, next) => {
     }
 
     const userID = user.rows[0].id;
-    
+
     // Hash the password
     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
     await db.query(

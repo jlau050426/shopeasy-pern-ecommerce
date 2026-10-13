@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./login-page.css";
-import apiClient from "../../services/apiClient";
+import apiClient, { initializeCsrf } from "../../services/apiClient";
 import { socket } from "../../socket";
 
 export function LoginPage({ fetchCart }) {
@@ -22,6 +22,8 @@ export function LoginPage({ fetchCart }) {
       });
 
       if (response.status === 200) {
+        //login create a new session, get a new csrf token
+        await initializeCsrf()
         //ask for socket rehandshake
         socket.disconnect().connect()
         if (fetchCart) {
