@@ -234,15 +234,12 @@ const postNewPasswordForm = async (req, res, next) => {
   //insert new password into database
   try {
     const token = req.body.token;
-    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-
     if (typeof token !== "string" || !/^[a-f0-9]{64}$/.test(token)) {
       return res.status(400).json({
         message: "Invalid reset link",
       });
     }
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
     //need to double verify the validity
     const user = await db.query(
@@ -260,6 +257,9 @@ const postNewPasswordForm = async (req, res, next) => {
     }
 
     const userID = user.rows[0].id;
+    
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
     await db.query(
       `
             UPDATE users

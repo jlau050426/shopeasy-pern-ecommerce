@@ -16,7 +16,7 @@ router.post(
       .isEmail()
       .withMessage("Please enter a valid email address")
       .normalizeEmail(),
-    body("password"),
+    body("password").trim(),
   ],
   authController.postLogin,
 );
@@ -84,6 +84,7 @@ router.post(
       .trim()
       .isLength({ min: 6 })
       .isAlphanumeric(),
+    body("confirmPassword").trim(),
   ],
   authController.postNewPasswordForm,
 );
