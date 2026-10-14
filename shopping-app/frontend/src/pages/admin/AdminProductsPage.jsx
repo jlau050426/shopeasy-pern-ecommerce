@@ -45,7 +45,7 @@ export function AdminProductsPage() {
         }
 
         if (error.response.status === 409) {
-          setErrorMessage(error.response.data?.message || "Unable to load an error message")
+          setErrorMessage(error.response.data?.errorMessage || "Unable to load an error message")
         }
       } else {
         setErrorMessage("Unable to connect to server")

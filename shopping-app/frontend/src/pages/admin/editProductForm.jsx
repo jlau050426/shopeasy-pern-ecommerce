@@ -133,7 +133,7 @@ export function EditProductForm() {
             navigate("/");
           }, 5000);
         } else if (error.response.status === 409) {
-          setErrorMessage(error.response.data.message);
+          setErrorMessage(error.response.data.errorMessage);
           setCountdown(5);
           setTimeout(() => {
             navigate("/");

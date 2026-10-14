@@ -13,7 +13,7 @@ const adminController = require("../controllers/admin");
 const isAuth = require("../middleware/isAuth");
 const isAdmin = require("../middleware/isAdmin");
 const verifyCsrfToken = require("../middleware/verifyCsrfToken");
-const blockCartDuringPayment = require("../middleware/blockCartDuringPayment");
+const blockProductDuringPayment = require("../middleware/blockProductDuringPayement")
 
 //multer file storage
 const storage = multer.diskStorage({
@@ -57,6 +57,7 @@ router.post(
   "/add-product",
   isAuth,
   isAdmin,
+  blockProductDuringPayment,
   verifyCsrfToken,
   upload,
   [
@@ -70,7 +71,7 @@ router.post(
   adminController.postAddProduct,
 );
 
-router.get("/add-product", isAuth, isAdmin, adminController.getAddProduct);
+router.get("/add-product", isAuth, isAdmin, blockProductDuringPayment,adminController.getAddProduct);
 router.get("/admin-page", isAuth, isAdmin, adminController.getAdminPage);
 
 // /admin/edit-product ==> get
@@ -78,7 +79,7 @@ router.get(
   "/edit-product/:productID",
   isAuth,
   isAdmin,
-  blockCartDuringPayment,
+  blockProductDuringPayment,
   adminController.getEditProduct,
 );
 
@@ -87,7 +88,7 @@ router.post(
   isAuth,
   isAdmin,
   verifyCsrfToken,
-  blockCartDuringPayment,
+  blockProductDuringPayment,
   upload,
   [
     body("title").trim().isLength({ min: 3 }).withMessage("Min 3 Characters"),
@@ -106,7 +107,7 @@ router.delete(
   isAuth,
   isAdmin,
   verifyCsrfToken,
-  blockCartDuringPayment,
+  blockProductDuringPayment,
   adminController.removeProduct,
 );
 
