@@ -9,22 +9,21 @@ import { socket } from "../socket";
 export function Header({
   cart = [],
   search = "",
-  setSearch = () => {},
+  setSearch = () => { },
   isLoggedIn,
-  reactHandleLogout = () => {}
+  reactHandleLogout = () => { },
+  isAdmin
 }) {
   const totalQuantity = cartQuantity(cart);
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const [isAdmin, setIsAdmin] = useState(false);
+
 
   //socket logout function
   useEffect(() => {
     function handleSocketLogout() {
       reactHandleLogout()
       socket.disconnect().connect();
-      setIsAdmin(false);
       initializeCsrf()
       navigate("/login");
     }
@@ -53,42 +52,6 @@ export function Header({
       }
     }
   }
-
-  useEffect(() => {
-    async function adminValidation() {
-      try {
-        const response = await apiClient.get("/check-admin");
-        if (response.status === 200) {
-          setIsAdmin(true);
-          setSuccessMessage(response.data?.successMessage || "Welcome Admin");
-          setTimeout(() => {
-            setSuccessMessage("");
-          }, 3000);
-        }
-      } catch (error) {
-        console.log(error);
-        if (error.response) {
-          if (error.response.status === 401) {
-            setIsAdmin(false);
-          } else if (error.response.status === 403) {
-            setSuccessMessage(
-              error.response.data?.errorMessage || "Welcome User",
-            );
-            setIsAdmin(false);
-            setTimeout(() => {
-              setSuccessMessage("");
-            }, 3000);
-          } else {
-            setErrorMessage("Failed to Pass Admin Validation");
-          }
-        } else {
-          setErrorMessage("Unable to connect to server");
-        }
-      }
-    }
-
-    adminValidation();
-  }, []);
 
   return (
     <>
@@ -178,23 +141,6 @@ export function Header({
             className="header-error-close"
             type="button"
             onClick={() => setErrorMessage("")}
-            aria-label="Dismiss error"
-          >
-            &times;
-          </button>
-        </div>
-      )}
-
-      {successMessage && (
-        <div className="header-success" role="alert">
-          <span className="header-success-icon" aria-hidden="true">
-            !
-          </span>
-          <span>{successMessage}</span>
-          <button
-            className="header-success-close"
-            type="button"
-            onClick={() => setSuccessMessage("")}
             aria-label="Dismiss error"
           >
             &times;

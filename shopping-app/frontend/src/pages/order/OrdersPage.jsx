@@ -5,7 +5,7 @@ import { Header } from "../../components/Header";
 import { OrderContainer } from "./OrderContainer";
 import { useNavigate } from "react-router-dom";
 
-export function OrdersPage({ cart, fetchCart, isLoggedIn, reactHandleLogout }) {
+export function OrdersPage({ cart, fetchCart, isLoggedIn, reactHandleLogout, isAdmin }) {
   const navigate = useNavigate();
   //state to save the orders
   const [orders, setOrders] = useState([]);
@@ -137,7 +137,7 @@ export function OrdersPage({ cart, fetchCart, isLoggedIn, reactHandleLogout }) {
   return (
     <>
       <title>Orders</title>
-      <Header cart={cart} isLoggedIn={isLoggedIn} reactHandleLogout={reactHandleLogout}></Header>
+      <Header cart={cart} isLoggedIn={isLoggedIn} reactHandleLogout={reactHandleLogout} isAdmin={isAdmin}></Header>
       <div className="orders-page">
         <div className="page-title">Your Orders</div>
         <div className="orders-grid">

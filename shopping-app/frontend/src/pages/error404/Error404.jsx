@@ -2,13 +2,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { Header } from "../../components/Header";
 import "./Error404.css";
 
-export function Error404({ cart = [], isLoggedIn, reactHandleLogout }) {
+export function Error404({ cart = [], isLoggedIn, reactHandleLogout, isAdmin }) {
   const navigate = useNavigate();
 
   return (
     <>
       <title>404 - Page Not Found | Ecommerce</title>
-      <Header cart={cart} isLoggedIn={isLoggedIn} reactHandleLogout={reactHandleLogout}/>
+      <Header cart={cart} isLoggedIn={isLoggedIn} reactHandleLogout={reactHandleLogout} isAdmin={isAdmin}/>
 
       <div className="error-page-container">
         <div className="error-card">
