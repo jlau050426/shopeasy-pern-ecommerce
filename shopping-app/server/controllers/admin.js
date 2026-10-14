@@ -3,7 +3,8 @@ const Product = require("../model/product");
 const fileOperator = require("../util/file");
 const { validationResult } = require("express-validator");
 const path = require("path");
-const {IMAGES_DIR} = require("../util/folders")
+const { IMAGES_DIR } = require("../util/folders");
+const Cart = require("../model/cart");
 
 //post add product form
 const postAddProduct = async (req, res, next) => {
@@ -62,7 +63,7 @@ const getEditProduct = async (req, res, next) => {
       currentTitle: product.title,
       currentPrice: product.price,
       currentDescription: product.description,
-      currentImageURL: product.imageurl
+      currentImageURL: product.imageurl,
     });
   } catch (err) {
     next(err);
@@ -149,7 +150,7 @@ const postEditProduct = async (req, res, next) => {
   } catch (err) {
     //image is parsed in and database is not being updated by anyone and your updation failed, remove image
     if (image && !isDbUpdated) {
-      await fileOperator.removeImage(image.path)
+      await fileOperator.removeImage(image.path);
     }
     next(err);
   }
@@ -167,7 +168,18 @@ const removeProduct = async (req, res, next) => {
       });
     }
     const imageURL = path.join(IMAGES_DIR, selectedProduct.rows[0].imageurl);
-    await Product.deleteProduct(productID);
+    const result = await Product.deleteProduct(productID);
+    //product exists but nothing was deleted -> it appears in at least one order
+    if (result.rowCount === 0) {
+      return res.status(409).json({
+        errorMessage:
+          "This product has been ordered before and can't be deleted.",
+      });
+    }
+    const removeFromCarts = await Cart.removeProductFromAllCarts(productID);
+    removeFromCarts.rows.forEach((row) => {
+      io.to(`user-${row.user_id}`).emit("cart:updated");
+    });
     await fileOperator.removeImage(imageURL); // remove image after database execution complete
     io.emit("admin-product-removed"); //broadcast to everyone
     res.status(200).json({

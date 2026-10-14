@@ -59,6 +59,14 @@ class Cart {
       [deliveryOptions, cartID, sessionUserID],
     );
   }
+
+  //remove a product from every cart, and return whose carts were changed
+  static removeProductFromAllCarts(productId) {
+    return db.query(
+      `DELETE FROM cart WHERE product_id = $1 RETURNING user_id`,
+      [productId],
+    );
+  }
 }
 
 module.exports = Cart;
