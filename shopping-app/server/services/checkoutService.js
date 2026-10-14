@@ -79,6 +79,7 @@ async function createPendingOrder(sessionUserID) {
     if (cartResult.rows.length === 0) {
       const error = new Error("Your cart is empty");
       error.statusCode = 400;
+      error.code = "CART_EMPTY"
       throw error;
     }
 

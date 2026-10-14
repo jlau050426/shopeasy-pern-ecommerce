@@ -362,7 +362,7 @@ const postCheckout = async (req, res, next) => {
       checkoutUrl: stripeSession.url,
     });
   } catch (err) {
-    if (err.statusCode === 400) {
+    if (err.statusCode === 400 && err.code === "CART_EMPTY") {
       return res.status(400).json({
         message: err.message,
       });
