@@ -25,19 +25,37 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
   async function deleteCartItem(cartItem) {
     try {
       await apiClient.delete(`/cart-delete-item/${cartItem.id}`);
+      await fetchCart()
       setSuccessMessage("Cart Deleted!");
+      setTimeout(() => {
+        setSuccessMessage("")
+      }, 3000)
     } catch (error) {
       if (error.response) {
-        if (error.response.status === 409) {
+        if (error.response.status === 401) {
+          navigate("/login")
+        }
+        else if (error.response.status === 404) {
+          //already deleted (e.g. in another tab): just refresh the list
+          await fetchCart();
+        }
+        else if (error.response.status === 409) {
           setErrorMessage(error.response.data.message);
           setTimeout(() => {
             setErrorMessage("")
           }, 5000);
         } else {
           setErrorMessage("Something Wrong");
+          setTimeout(() => {
+            setErrorMessage("")
+          }, 3000)
         }
       } else {
         setErrorMessage("Unable to connect to server");
+
+        setTimeout(() => {
+          setErrorMessage("")
+        }, 3000)
       }
       console.log(error);
     }
@@ -60,19 +78,26 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
         cart.map((cartItem) => {
           const selectedDeliveryOption = deliveryOptions.find(
             (deliveryOption) => {
-              return deliveryOption.id === cartItem.delivery_options;
+              return Number(deliveryOption.id) === Number(cartItem.delivery_options);
             },
           );
 
-          const estimatedDeliveryTimeMs =
+          const estimatedDeliveryTimeMs = selectedDeliveryOption ?
             currentTime +
-            selectedDeliveryOption.delivery_days * 24 * 60 * 60 * 1000;
+            selectedDeliveryOption.delivery_days * 24 * 60 * 60 * 1000
+            :
+            null;
 
           return (
             <div key={cartItem.id} className="cart-item-container">
               <div className="delivery-date">
                 Delivery date:{" "}
-                {dayjs(estimatedDeliveryTimeMs).format("dddd, MMMM D")}
+                {
+                  estimatedDeliveryTimeMs ?
+                    dayjs(estimatedDeliveryTimeMs).format("dddd, MMMM D")
+                    :
+                    "Please choose a delivery option"
+                }
               </div>
 
               <div className="cart-item-details-grid">
@@ -125,8 +150,18 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
                               setErrorMessage("")
                             }, 5000);
                           }
+                          else {
+                            setErrorMessage("Unable to change the delivery option. Please try again.")
+                            setTimeout(() => {
+                              setErrorMessage("")
+                            }, 3000)
+                          }
+                        } else {
+                          setErrorMessage("Unable to connect to server")
+                          setTimeout(() => {
+                            setErrorMessage("")
+                          }, 3000)
                         }
-                        console.log(error);
                       }
                     }
 
@@ -151,9 +186,9 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
                         <input
                           type="radio"
                           checked={
-                            deliveryOption.id === cartItem.delivery_options
+                            Number(deliveryOption.id) === Number(cartItem.delivery_options)
                           }
-                          onChange={() => {}}
+                          onChange={() => { }}
                           className="delivery-option-input"
                           //separate by dfferent orders
                           name={`delivery-option-${cartItem.product_id}`}
