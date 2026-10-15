@@ -39,7 +39,9 @@ const fileFilter = (req, file, cb) => {
     cb(null, true);
   } else {
     // To reject this file pass `false`, like so:
-    cb(null, false);
+    const error = new Error("Invalid File Type");
+    error.code = "INVALID_FILE_TYPE";
+    cb(error);
   }
 };
 
@@ -48,9 +50,30 @@ const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 5 * 1024, // 5MB
+    fileSize: 5 * 1024 * 1024, // 5MB
   },
 }).single("image");
+
+const uploadImage = (req, res, next) => {
+  upload(req, res, (err) => {
+    if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {
+      // File exceed size limit
+      return res.status(413).json({
+        errorMessage: "Image exceed size limit. Maximum 5MB",
+      });
+    } else if (err && err.code === "INVALID_FILE_TYPE") {
+      // Invalid file type
+      return res.status(422).json({
+        errorMessage: "Invalid File Type. Allowed: (JPG, PNG, JPEG)",
+      });
+    } else if (err) {
+      return next(err);
+    }
+
+    //upload succeed
+    next();
+  });
+};
 
 // /admin/add-product => POST
 router.post(
@@ -59,10 +82,13 @@ router.post(
   isAdmin,
   blockProductDuringPayment,
   verifyCsrfToken,
-  upload,
+  uploadImage,
   [
     body("title").trim().isLength({ min: 3 }).withMessage("Min 3 Characters"),
-    body("price").isFloat().toFloat(),
+    body("price")
+      .isFloat({ min: 1, max: 99999 })
+      .withMessage("Price must be a decimal (1 - 99999)")
+      .toFloat(),
     body("description")
       .isLength({ min: 6 })
       .withMessage("Min 6 characters")
@@ -95,10 +121,13 @@ router.post(
   isAdmin,
   verifyCsrfToken,
   blockProductDuringPayment,
-  upload,
+  uploadImage,
   [
     body("title").trim().isLength({ min: 3 }).withMessage("Min 3 Characters"),
-    body("price").isFloat().toFloat(),
+    body("price")
+      .isFloat({ min: 1, max: 99999 })
+      .withMessage("Price must be a decimal (1 - 99999)")
+      .toFloat(),
     body("description")
       .isLength({ min: 6 })
       .withMessage("Min 6 characters")

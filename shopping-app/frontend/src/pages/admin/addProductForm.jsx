@@ -168,7 +168,16 @@ export function AddProductForm() {
           setTimeout(() => {
             navigate("/");
           }, 5000);
-        } else {
+        }
+        else if (
+          error.response.status === 400 ||
+          error.response.status === 413 ||
+          error.response.status === 422
+        ) {
+          //problem with the input (image too large, wrong type, invalid field): stay on the form so it can be fixed
+          setErrorMessage(error.response.data?.errorMessage || "Please check the form.");
+        }
+        else {
           setErrorMessage(
             error.response.data?.errorMessage || "Something Wrong",
           );
