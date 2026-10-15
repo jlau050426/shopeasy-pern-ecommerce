@@ -14,7 +14,6 @@ export function AdminProductsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
   const page = searchParams.get("page") || 1;
-  const [countdown, setCountdown] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0)
   const navigate = useNavigate();
 
@@ -38,10 +37,6 @@ export function AdminProductsPage() {
             error.response.data?.message ||
             "product deletion failed",
           );
-          setCountdown(5);
-          setTimeout(() => {
-            navigate("/admin/products")
-          }, 5000);
         }
 
         if (error.response.status === 409) {
@@ -53,16 +48,6 @@ export function AdminProductsPage() {
     }
   }
 
-  //countdown timer
-  useEffect(() => {
-    if (countdown === null || countdown <= 0) return;
-
-    const timer = setInterval(() => {
-      setCountdown((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [countdown]);
 
   //check admin validity
   useEffect(() => {
@@ -73,25 +58,11 @@ export function AdminProductsPage() {
       } catch (error) {
         if (error.response) {
           if (error.response.status === 401) {
-            setErrorMessage(error.response.data.message);
-            setCountdown(5);
-            setTimeout(() => {
-              navigate("/login");
-            }, 5000);
+            navigate("/login");
           } else if (error.response.status === 403) {
-            setErrorMessage(error.response.data.message);
-            setCountdown(5);
-            setTimeout(() => {
-              navigate("/");
-            }, 5000);
+            navigate("/");
           } else {
-            setErrorMessage(
-              error.response.data?.errorMessage || "Something Wrong",
-            );
-            setCountdown(5);
-            setTimeout(() => {
-              navigate("/");
-            }, 5000);
+            navigate("/");
           }
         } else {
           setErrorMessage("Unable to connect to the server. Please try again.");
@@ -105,12 +76,12 @@ export function AdminProductsPage() {
   useEffect(() => {
     async function fetchProducts() {
       if (!Number.isInteger(Number(page)) || Number(page) < 1) {
-        setErrorMessage("Invalid Page! Redirecting to Page 1...");
+        setErrorMessage("Invalid Page! Return to Page 1...");
         setProducts([]);
+        setSearchParams({ page: 1 }, { replace: true });
         setTimeout(() => {
-          setSearchParams({ page: 1 }, { replace: true });
           setErrorMessage("");
-        }, 2000);
+        }, 3000)
         return;
       }
 
@@ -126,13 +97,12 @@ export function AdminProductsPage() {
           if (error.response.status === 404) {
             setErrorMessage(
               error.response.data?.message ||
-              "page exceeds maximum pages, redirecting to page 1.....",
+              "page exceeds maximum pages. Return to page 1.....",
             );
-            setCountdown(5);
+            setSearchParams({ page: 1 }, { replace: true });
             setTimeout(() => {
-              setSearchParams({ page: 1 }, { replace: true });
               setErrorMessage("");
-            }, 5000);
+            }, 3000)
           }
         } else {
           setErrorMessage("Unable to connect to the server.");
@@ -243,10 +213,7 @@ export function AdminProductsPage() {
             !
           </span>
           <div className="header-error-content">
-            <span>{errorMessage}</span>
-            {countdown !== null && countdown > 0 && (
-              <span> Redirecting in {countdown}...</span>
-            )}
+            {errorMessage}
           </div>
           <button
             className="header-error-close"

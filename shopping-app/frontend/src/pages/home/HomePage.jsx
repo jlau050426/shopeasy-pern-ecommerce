@@ -6,37 +6,25 @@ import { ProductContainer } from "./ProductContainer";
 import { generatePagination } from "./pagination";
 import { useSearchParams } from "react-router-dom";
 
-export function HomePage({ cart, fetchCart, isLoggedIn, reactHandleLogout, isAdmin}) {
+export function HomePage({ cart, fetchCart, isLoggedIn, reactHandleLogout, isAdmin }) {
   const [products, setProducts] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [totalPages, setTotalPages] = useState(null);
   const [currentPage, setCurrentPage] = useState(null);
   const [search, setSearch] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
-  const [countdown, setCountdown] = useState(null);
+  
   const page = searchParams.get("page") || 1;
-
-  //countdown timer
-  useEffect(() => {
-    if (countdown === null || countdown <= 0) return;
-
-    const timer = setInterval(() => {
-      setCountdown((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [countdown]);
 
   useEffect(() => {
     async function fetchProduct() {
       if (!Number.isInteger(Number(page)) || Number(page) < 1) {
-        setErrorMessage("Invalid Page! Redirecting to Page 1");
-        setProducts([]);
-        setCountdown(5);
+        setErrorMessage("Invalid Page! Return to Page 1");
         setTimeout(() => {
-          setSearchParams({ page: 1 }, { replace: true });
-          setErrorMessage("");
-        }, 5000);
+          setErrorMessage("")
+        }, 5000)
+        setProducts([]);
+        setSearchParams({ page: 1 }, { replace: true })
         return;
       }
       //assynchronous code to fetch data (promise)
@@ -50,24 +38,25 @@ export function HomePage({ cart, fetchCart, isLoggedIn, reactHandleLogout, isAdm
           setErrorMessage(
             error.response.data?.message || "An error has occured",
           );
+          setTimeout(() => {
+            setErrorMessage("")
+          }, 5000)
           setProducts([]);
           if (error.response.status === 404) {
             setErrorMessage(
               error.response.data?.message ||
-                "page exceeds maximum pages, redirecting to page 1.....",
+              "page exceeds maximum pages. Return to page 1.....",
             );
-            setCountdown(5);
-            setTimeout(() => {
-              setSearchParams({ page: 1 }, { replace: true });
-              setErrorMessage("");
-            }, 5000);
+            setSearchParams({ page: 1 }, { replace: true })
           }
         } else {
           setErrorMessage("Unable to connect to the server");
+          setTimeout(() => {
+            setErrorMessage("")
+          }, 5000)
           setProducts([]);
           setTotalPages([1]);
         }
-        console.log(error);
       }
     }
     fetchProduct();
@@ -96,19 +85,8 @@ export function HomePage({ cart, fetchCart, isLoggedIn, reactHandleLogout, isAdm
               !
             </span>
             <div className="header-error-content">
-              <span>{errorMessage}</span>
-              {countdown !== null && countdown > 0 && (
-                <span> Redirecting in {countdown}...</span>
-              )}
+              {errorMessage}
             </div>
-            <button
-              className="header-error-close"
-              type="button"
-              onClick={() => setErrorMessage("")}
-              aria-label="Dismiss error"
-            >
-              &times;
-            </button>
           </div>
         )}
         <div className="products-grid">

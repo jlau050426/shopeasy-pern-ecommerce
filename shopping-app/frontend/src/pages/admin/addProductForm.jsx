@@ -14,17 +14,23 @@ export function AddProductForm() {
   const [countdown, setCountdown] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [redirectPath, setRedirectPath] = useState(null)
   const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
-    if (countdown === null || countdown <= 0) return;
+    if (countdown === null) return;
+
+    if (countdown === 0) {
+      navigate(redirectPath)
+      return
+    }
 
     const timer = setInterval(() => {
       setCountdown((prev) => prev - 1);
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [countdown]);
+  }, [countdown, navigate, redirectPath]);
 
   useEffect(() => {
     //while on edit page already validated through pre-fetch product details
@@ -35,24 +41,18 @@ export function AddProductForm() {
         if (error.response) {
           if (error.response.status === 401) {
             setErrorMessage(error.response.data.message);
+            setRedirectPath("/login")
             setCountdown(5);
-            setTimeout(() => {
-              navigate("/login");
-            }, 5000);
           } else if (error.response.status === 403) {
             setErrorMessage(error.response.data.message);
+            setRedirectPath("/")
             setCountdown(5);
-            setTimeout(() => {
-              navigate("/");
-            }, 5000);
           } else {
             setErrorMessage(
               error.response.data?.errorMessage || "Something Wrong",
             );
+            setRedirectPath("/admin/products")
             setCountdown(5);
-            setTimeout(() => {
-              navigate("/admin/products");
-            }, 5000);
           }
         } else {
           setErrorMessage("Unable to connect to the server. Please try again.");
@@ -149,25 +149,19 @@ export function AddProductForm() {
         setSuccessMessage(
           response.data.successMessage || "Product added successfully!",
         );
+        setRedirectPath("/admin/products")
         setCountdown(5);
-        setTimeout(() => {
-          navigate("/admin/products");
-        }, 5000);
       }
     } catch (error) {
       if (error.response) {
         if (error.response.status === 401) {
           setErrorMessage(error.response.data.message);
+          setRedirectPath("/login")
           setCountdown(5);
-          setTimeout(() => {
-            navigate("/login");
-          }, 5000);
         } else if (error.response.status === 403) {
           setErrorMessage(error.response.data.message);
+          setRedirectPath("/")
           setCountdown(5);
-          setTimeout(() => {
-            navigate("/");
-          }, 5000);
         }
         else if (
           error.response.status === 400 ||
@@ -181,10 +175,8 @@ export function AddProductForm() {
           setErrorMessage(
             error.response.data?.errorMessage || "Something Wrong",
           );
+          setRedirectPath("/admin/add-product")
           setCountdown(5);
-          setTimeout(() => {
-            navigate("/admin/add-product");
-          }, 5000);
         }
       } else {
         setErrorMessage("Unable to connect to the server. Please try again.");
@@ -232,14 +224,6 @@ export function AddProductForm() {
                   <span> Redirecting in {countdown}...</span>
                 )}
               </div>
-              <button
-                className="header-error-close"
-                type="button"
-                onClick={() => setErrorMessage("")}
-                aria-label="Dismiss error"
-              >
-                &times;
-              </button>
             </div>
           )}
 
@@ -254,14 +238,6 @@ export function AddProductForm() {
                   <span> Redirecting in {countdown}...</span>
                 )}
               </div>
-              <button
-                className="header-success-close"
-                type="button"
-                onClick={() => setSuccessMessage("")}
-                aria-label="Dismiss error"
-              >
-                &times;
-              </button>
             </div>
           )}
 

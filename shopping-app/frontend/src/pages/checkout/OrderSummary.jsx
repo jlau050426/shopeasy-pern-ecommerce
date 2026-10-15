@@ -10,17 +10,6 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
   const [currentTime] = useState(() => Date.now());
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [countdown, setCountdown] = useState(null);
-
-  useEffect(() => {
-    if (countdown === null || countdown <= 0) return;
-
-    const timer = setInterval(() => {
-      setCountdown((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [countdown]);
 
   async function deleteCartItem(cartItem) {
     try {
@@ -233,19 +222,8 @@ export function OrderSummary({ deliveryOptions, cart, fetchCart }) {
             !
           </span>
           <div className="header-error-content">
-            <span>{errorMessage}</span>
-            {countdown !== null && countdown > 0 && (
-              <span> Redirecting in {countdown}...</span>
-            )}
+            {errorMessage}
           </div>
-          <button
-            className="header-error-close"
-            type="button"
-            onClick={() => setErrorMessage("")}
-            aria-label="Dismiss error"
-          >
-            &times;
-          </button>
         </div>
       )}
     </div>

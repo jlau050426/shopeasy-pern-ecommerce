@@ -10,18 +10,25 @@ export function NewPasswordPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [countdown, setCountdown] = useState(null);
+  const [redirectPath, setRedirectPath] = useState(null)
   const [isLoading, setIsLoading] = useState(false);
   const { token } = useParams();
 
   useEffect(() => {
-    if (countdown === null || countdown <= 0) return;
+    if (countdown === null) return;
+
+    if (countdown === 0) {
+      navigate(redirectPath)
+      return
+    }
+
 
     const timer = setInterval(() => {
       setCountdown((prev) => prev - 1);
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [countdown]);
+  }, [countdown, navigate, redirectPath]);
 
   async function handleSubmit(event) {
     setIsLoading(true);
@@ -34,10 +41,8 @@ export function NewPasswordPage() {
       });
 
       setSuccessMessage("New Password Updated Successfully!");
+      setRedirectPath("/login")
       setCountdown(5);
-      setTimeout(() => {
-        navigate("/login");
-      }, 5000);
     } catch (error) {
       if (error.response) {
         setErrorMessage(error.response.data?.message || "An error occured");

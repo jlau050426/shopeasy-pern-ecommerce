@@ -13,21 +13,26 @@ export function EditProductForm() {
   const [currentImageURL, setCurrentImageURL] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [countdown, setCountdown] = useState(null);
-
+  const [redirectPath, setRedirectPath] = useState(null)
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const { productID } = useParams();
 
   useEffect(() => {
-    if (countdown === null || countdown <= 0) return;
+    if (countdown === null) return;
+
+    if (countdown === 0) {
+      navigate(redirectPath)
+      return
+    }
 
     const timer = setInterval(() => {
       setCountdown((prev) => prev - 1);
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [countdown]);
+  }, [countdown, navigate, redirectPath]);
 
   function handleFileSelect(event) {
     const file = event.target.files?.[0];
@@ -113,31 +118,23 @@ export function EditProductForm() {
         setSuccessMessage(
           response.data.successMessage || "Product updated successfully!",
         );
+        setRedirectPath("/admin/products")
         setCountdown(5);
-        setTimeout(() => {
-          navigate("/admin/products");
-        }, 5000);
       }
     } catch (error) {
       if (error.response) {
         if (error.response.status === 401) {
           setErrorMessage(error.response.data.message);
+          setRedirectPath("/login")
           setCountdown(5);
-          setTimeout(() => {
-            navigate("/login");
-          }, 5000);
         } else if (error.response.status === 403) {
           setErrorMessage(error.response.data.message);
+          setRedirectPath("/")
           setCountdown(5);
-          setTimeout(() => {
-            navigate("/");
-          }, 5000);
         } else if (error.response.status === 409) {
           setErrorMessage(error.response.data.errorMessage);
+          setRedirectPath("/")
           setCountdown(5);
-          setTimeout(() => {
-            navigate("/");
-          }, 5000);
         }
         else if (
           error.response.status === 400 ||
@@ -152,10 +149,8 @@ export function EditProductForm() {
           setErrorMessage(
             error.response.data?.errorMessage || "Something Wrong",
           );
+          setRedirectPath("/admin/products")
           setCountdown(5)
-          setTimeout(() => {
-            navigate("/admin/products");
-          }, 5000);
         }
       } else {
         setErrorMessage("Unable to connect to the server. Please try again.");
@@ -179,24 +174,18 @@ export function EditProductForm() {
         if (error.response) {
           if (error.response.status === 401) {
             setErrorMessage(error.response.data.message);
+            setRedirectPath("/login")
             setCountdown(5);
-            setTimeout(() => {
-              navigate("/login");
-            }, 5000);
           } else if (error.response.status === 403) {
             setErrorMessage(error.response.data.message);
+            setRedirectPath("/")
             setCountdown(5);
-            setTimeout(() => {
-              navigate("/");
-            }, 5000);
           } else {
             setErrorMessage(
               error.response.data?.errorMessage || "Something Wrong",
             );
+            setRedirectPath("/admin/products")
             setCountdown(5);
-            setTimeout(() => {
-              navigate("/admin/products");
-            }, 5000);
           }
         } else {
           setErrorMessage("Unable to connect to the server. Please try again.");

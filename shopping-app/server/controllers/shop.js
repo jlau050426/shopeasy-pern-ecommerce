@@ -28,7 +28,7 @@ const getIndex = async (req, res, next) => {
     async (fetchPage, totalPages, page) => {
       if (totalPages > 0 && page > totalPages) {
         return res.status(404).json({
-          message: "page exceeds maximum pages, redirecting to page 1.....",
+          message: "page exceeds maximum pages, redirect to page 1.....",
           totalPages: totalPages,
           prods: fetchPage.rows,
         });
