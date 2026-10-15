@@ -67,10 +67,10 @@ export function ProductDetails({ cart, isLoggedIn, reactHandleLogout, isAdmin })
               />
             </div>
 
+            <div className="product-price"></div>
+
             <h2 style={{ margin: "15px 0", color: "#B12704" }}>
-              {typeof product.price === "number"
-                ? formatMoney(product.price)
-                : `RM${product.price}`}
+              {formatMoney(product.price)}
             </h2>
 
             <p

@@ -8,9 +8,9 @@ export function generatePagination(totalPages, currentPage) {
     const isCurrent = Number(page) === Number(currentPage)
     pages.push(
       <Link
-      key={page}
-      to={`/?page=${page}`}
-      className={isCurrent ? "active" : ""}
+        key={page}
+        to={`/?page=${page}`}
+        className={isCurrent ? "active" : ""}
       >
         {page}
       </Link>,

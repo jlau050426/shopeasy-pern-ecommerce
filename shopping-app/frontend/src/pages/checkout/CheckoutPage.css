@@ -246,3 +246,11 @@
   cursor: pointer;
   margin-left: 8px;
 }
+
+.payment-summary-note {
+  font-size: 16px;
+  font-style: italic;
+  font-weight: bold;
+  color: darkred;
+  margin: 8px 0 12px;
+}

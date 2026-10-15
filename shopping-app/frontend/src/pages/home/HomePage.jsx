@@ -10,6 +10,7 @@ export function HomePage({ cart, fetchCart, isLoggedIn, reactHandleLogout, isAdm
   const [products, setProducts] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [totalPages, setTotalPages] = useState(null);
+  
   const [currentPage, setCurrentPage] = useState(null);
   const [search, setSearch] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
@@ -55,7 +56,7 @@ export function HomePage({ cart, fetchCart, isLoggedIn, reactHandleLogout, isAdm
             setErrorMessage("")
           }, 5000)
           setProducts([]);
-          setTotalPages([1]);
+          setTotalPages([]);
         }
       }
     }
@@ -119,7 +120,7 @@ export function HomePage({ cart, fetchCart, isLoggedIn, reactHandleLogout, isAdm
           )}
         </div>
         <section className="pagination">
-          {totalPages && generatePagination(totalPages, currentPage)}
+          {generatePagination(totalPages, currentPage)}
         </section>
       </div>
     </>

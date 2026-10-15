@@ -119,6 +119,13 @@ export function PaymentSummary({ cart, paymentSummary }) {
               </div>
             </div>
 
+            <br />
+            <br />
+            <p className="payment-summary-note">
+              The final amount is confirmed on the payment page and may differ from this
+              total by RM 0.01 due to tax rounding.
+            </p>
+
             <button
               className="place-order-button button-primary"
               onClick={CreateOrder}

@@ -49,6 +49,7 @@ export function OrdersPage({ cart, fetchCart, isLoggedIn, reactHandleLogout, isA
         return order.id !== orderId;
       });
 
+      
       // Update the React state with the new array.
       setOrders(updatedOrders);
     } catch (error) {
