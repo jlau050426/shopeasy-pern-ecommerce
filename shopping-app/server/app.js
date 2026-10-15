@@ -31,7 +31,7 @@ const server = http.createServer(app);
 app.use(helmet());
 
 //initialise port
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 
 //stripe webhook require raw request body, need to define before express.json
 app.post(
