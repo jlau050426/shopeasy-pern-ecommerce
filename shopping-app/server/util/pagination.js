@@ -18,8 +18,8 @@ const pagination = async (req, next, productsPerPage, callback) => {
     const totalPages = Math.ceil(totalProducts / productsPerPage);
 
     await callback(fetchPage, totalPages, page);
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 };
 

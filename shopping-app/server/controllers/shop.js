@@ -645,21 +645,22 @@ const continueCheckout = async (req, res, next) => {
       message: "Your payment is still being processed.",
       orderId: order.id,
     });
-  } catch (error) {
-    if (error.statusCode === 404) {
+  } catch (err) {
+    if (err.statusCode === 404) {
       return res.status(404).json({
         code: "NO_PENDING_PAYMENT",
-        message: error.message,
+        message: err.message,
       });
     }
 
-    if (error.statusCode === 409) {
+    if (err.statusCode === 409) {
       return res.status(409).json({
         code: "CHECKOUT_SESSION_MISSING",
-        message: error.message,
+        message: err.message,
       });
     }
-    return next(error);
+
+    next(err)
   }
 };
 
@@ -683,8 +684,8 @@ const getPendingPayment = async (req, res, next) => {
     } else {
       return res.status(204).send();
     }
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 };
 
@@ -909,10 +910,7 @@ const getInvoice = async (req, res, next) => {
       readStream.pipe(res);
     });
 
-    writeStream.on("error", (error) => {
-      const err = new Error(error);
-      console.error(err);
-      err.statusCode = 500;
+    writeStream.on("error", (err) => {
       next(err);
     });
   } catch (err) {

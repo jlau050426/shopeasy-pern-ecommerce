@@ -2,7 +2,7 @@
 const express = require("express");
 const { body } = require("express-validator");
 const multer = require("multer"); //image uploads
-const {IMAGES_DIR} = require("../util/folders")
+const { IMAGES_DIR } = require("../util/folders");
 
 const router = express.Router();
 
@@ -13,7 +13,7 @@ const adminController = require("../controllers/admin");
 const isAuth = require("../middleware/isAuth");
 const isAdmin = require("../middleware/isAdmin");
 const verifyCsrfToken = require("../middleware/verifyCsrfToken");
-const blockProductDuringPayment = require("../middleware/blockProductDuringPayement")
+const blockProductDuringPayment = require("../middleware/blockProductDuringPayement");
 
 //multer file storage
 const storage = multer.diskStorage({
@@ -48,7 +48,7 @@ const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB
+    fileSize: 5 * 1024, // 5MB
   },
 }).single("image");
 
@@ -71,7 +71,13 @@ router.post(
   adminController.postAddProduct,
 );
 
-router.get("/add-product", isAuth, isAdmin, blockProductDuringPayment,adminController.getAddProduct);
+router.get(
+  "/add-product",
+  isAuth,
+  isAdmin,
+  blockProductDuringPayment,
+  adminController.getAddProduct,
+);
 router.get("/admin-page", isAuth, isAdmin, adminController.getAdminPage);
 
 // /admin/edit-product ==> get

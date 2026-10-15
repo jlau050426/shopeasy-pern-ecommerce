@@ -142,7 +142,7 @@ export function SignupPage() {
               type="submit"
               disabled={isLoading}
             >
-              Create account
+              Create Account
             </button>
           </form>
 

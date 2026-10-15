@@ -186,10 +186,8 @@ const removeProduct = async (req, res, next) => {
       message: "success!",
     });
     console.log("Product removed!");
-  } catch (error) {
+  } catch (err) {
     //remove product failed
-    const err = new Error(error);
-    err.statusCode = 500;
     next(err);
   }
 };
