@@ -1,7 +1,7 @@
 {
-  "name": "nodejs-complete-guide",
+  "name": "shopping-app-server",
   "version": "1.0.0",
-  "description": "Complete Node.js Guide",
+  "description": "REST API for the shopping app (Express + PostgreSQL)",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -9,7 +9,7 @@
     "dev": "nodemon app.js",
     "start-server": "node app.js"
   },
-  "author": "Maximilian Schwarzmüller",
+  "author": "Joshua Lau Tiew Lung",
   "license": "ISC",
   "devDependencies": {
     "nodemon": "^1.18.3"
@@ -19,9 +19,7 @@
     "connect-pg-simple": "^10.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
-    "ejs": "^2.6.1",
     "express": "^4.16.3",
-    "express-handlebars": "^3.0.0",
     "express-session": "^1.19.0",
     "express-validator": "^7.3.2",
     "helmet": "^8.3.0",
@@ -30,8 +28,6 @@
     "nodemailer-sendgrid": "^1.0.3",
     "pdfkit": "^0.19.1",
     "pg": "^8.22.0",
-    "pug": "^2.0.3",
-    "sequelize": "^6.37.8",
     "socket.io": "^4.8.3",
     "stripe": "^22.5.0"
   }

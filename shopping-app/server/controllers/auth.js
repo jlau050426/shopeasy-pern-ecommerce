@@ -146,7 +146,7 @@ const postSignUp = async (req, res, next) => {
 
     try {
       await transport.sendMail({
-        from: "joshua250426.work@gmail.com",
+        from: process.env.EMAIL_FROM,
         to: email,
         subject: "Account Creation Success!",
         html: "<h2>Welcome!</h2><p>Your account has been created successfully.</p><p>You can now log in using your email address.</p><p>Thank you,<br>Joshua Store</p>",
@@ -207,7 +207,7 @@ const postReset = (req, res, next) => {
 
       //send reset password page link through email
       await transport.sendMail({
-        from: "joshua250426.work@gmail.com",
+        from: process.env.EMAIL_FROM,
         to: email,
         subject: "Reset Password Request",
         html: `
