@@ -345,7 +345,7 @@ flowchart TD
 ## Project structure
 
 ```
-React---Node---REST/
+shopeasy-pern-ecommerce/
 ├── README.md
 └── shopping-app/
     ├── frontend/                     React app (Vite)
@@ -405,8 +405,8 @@ flowchart LR
 ### Step 1: Clone the repository
 
 ```bash
-git clone https://github.com/jlau050426/React---Node---REST.git
-cd React---Node---REST/shopping-app
+git clone https://github.com/jlau050426/shopeasy-pern-ecommerce.git
+cd shopeasy-pern-ecommerce/shopping-app
 ```
 
 All the following commands start from this `shopping-app` folder.
